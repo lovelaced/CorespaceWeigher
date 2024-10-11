@@ -251,10 +251,17 @@ async fn note_new_block(
 
     let consumption_json = serde_json::to_string(&consumption_update)?;
 
-    // Broadcast the consumption update to all connected WebSocket clients
+    // Clone the list of clients while holding the read lock, then release it.
+    let client_list_snapshot;
+    {
+        let clients_read_guard = clients.read().await;
+        client_list_snapshot = clients_read_guard.clone(); // Cloning the Arc<RwLock> instances
+    }
+
     let mut disconnected_clients = Vec::new();
-    let clients_read_guard = clients.read().await;
-    for (i, client) in clients_read_guard.iter().enumerate() {
+
+    // Now broadcast to the cloned list
+    for (i, client) in client_list_snapshot.iter().enumerate() {
         let mut ws_stream = client.write().await;
         if let Err(e) = ws_stream.send(Message::Text(consumption_json.clone())).await {
             log::warn!("Client disconnected: {:?}", e);
@@ -262,30 +269,43 @@ async fn note_new_block(
         }
     }
 
-    // Clone `clients` before passing it to the remove function
+    // Remove disconnected clients after the broadcast
     remove_disconnected_clients(Arc::clone(&clients), disconnected_clients).await;
 
     Ok(())
 }
-
 async fn remove_disconnected_clients(
     clients: ClientList,
     disconnected_clients: Vec<usize>,
 ) {
-    if !disconnected_clients.is_empty() {
-        match timeout(Duration::from_secs(5), clients.write()).await {
-            Ok(mut clients_write_guard) => {
-                for &i in disconnected_clients.iter().rev() {
-                    clients_write_guard.remove(i);
-                }
-                log::info!("Removed {} disconnected clients.", disconnected_clients.len());
+    if disconnected_clients.is_empty() {
+        return;
+    }
+
+    log::debug!(
+        "Attempting to acquire write lock to remove {} disconnected clients at {:?}",
+        disconnected_clients.len(),
+        std::time::Instant::now()
+    );
+
+    match timeout(Duration::from_secs(10), clients.write()).await {
+        Ok(mut clients_write_guard) => {
+            log::debug!("Write lock acquired at {:?}", std::time::Instant::now());
+            for &i in disconnected_clients.iter().rev() {
+                clients_write_guard.remove(i);
             }
-            Err(_) => {
-                log::error!("Timeout while attempting to remove disconnected clients.");
-            }
+            log::debug!(
+                "Removed {} clients, releasing lock at {:?}",
+                disconnected_clients.len(),
+                std::time::Instant::now()
+            );
+        }
+        Err(_) => {
+            log::error!("Timeout while attempting to remove disconnected clients at {:?}", std::time::Instant::now());
         }
     }
 }
+
 // Fetch weight consumption data for the given block
 async fn weight_consumption(
 	api: OnlineClient<PolkadotConfig>,
