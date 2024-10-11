@@ -140,27 +140,28 @@ async fn start_websocket_server(clients: ClientList) -> Result<(), Box<dyn std::
 
 // Start tracking parachain consumption and send updates to websocket clients
 async fn start_tracking(
-	rpc_index: usize,
-	clients: ClientList,
+    rpc_index: usize,
+    clients: ClientList,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	let tasks: Vec<_> = registered_paras()
-		.into_iter()
-		.map(|para| {
-			let clients_clone = clients.clone();
-			tokio::spawn(
-				async move { track_weight_consumption(para, rpc_index, clients_clone).await },
-			)
-		})
-		.collect();
+    let mut task_set = tokio::task::JoinSet::new();
 
-	for task in tasks {
-    if let Err(e) = task.await {
-        log::error!("A tracking task encountered an error: {:?}", e);
+    for para in registered_paras() {
+        let clients_clone = Arc::clone(&clients);
+        task_set.spawn(async move {
+            track_weight_consumption(para, rpc_index, clients_clone).await;
+        });
     }
-	}
 
-	Ok(())
+    // Wait for all tasks to finish
+    while let Some(res) = task_set.join_next().await {
+        if let Err(e) = res {
+            log::error!("A tracking task encountered an error: {:?}", e);
+        }
+    }
+
+    Ok(())
 }
+
 // Track weight consumption for each parachain and broadcast updates to websocket clients
 async fn track_weight_consumption(para: Parachain, rpc_index: usize, clients: ClientList) {
 	let Some(rpc) = para.rpcs.get(rpc_index) else {
