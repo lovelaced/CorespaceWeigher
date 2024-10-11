@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!NOTE]
+> This is a fork of Region X's Corespace Weigher, which removes the CSV/historical functionality and replaces it with a streaming websocket. Not for production use.
+
 The program is designed to fetch weight utilization data from a predefined set
 of parachains. The obtained weight information is then stored in the `out`
 directory as multiple CSV files.
