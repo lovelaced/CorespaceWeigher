@@ -1,68 +1,541 @@
 [
   {
     "name": "Acala",
-    "rpcs": [
-      "wss://acala-rpc.dwellir.com",
-      "wss://acala-rpc-0.aca-api.network",
-      "wss://acala-rpc-1.aca-api.network",
-      "wss://acala-rpc-3.aca-api.network/ws"
-    ],
     "para_id": 2000,
     "relay_chain": "Polkadot",
-    "expiry_timestamp": 1709740246
+    "rpcs": [
+      "wss://acala-rpc-0.aca-api.network",
+      "wss://acala-rpc-1.aca-api.network",
+      "wss://acala-rpc-3.aca-api.network/ws",
+      "wss://acala-rpc.dwellir.com",
+      "wss://acala-polkadot.api.onfinality.io/public-ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://acala.network/",
+    "info": "acala"
   },
   {
-    "name": "Polkadot",
-    "rpcs": [
-      "wss://rpc-polkadot.luckyfriday.io",
-      "wss://polkadot-rpc.dwellir.com"
-    ],
-    "para_id": 0,
+    "name": "Ajuna Network",
+    "para_id": 2051,
     "relay_chain": "Polkadot",
-    "expiry_timestamp": 1709740246
+    "rpcs": [
+      "wss://rpc-para.ajuna.network",
+      "wss://ajuna.ibp.network",
+      "wss://ajuna.dotters.network",
+      "wss://ajuna.api.onfinality.io/public-ws",
+      "wss://ajuna.public.curie.radiumblock.co/ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://ajuna.io",
+    "info": "ajuna"
   },
   {
-    "name": "Moonbeam",
-    "rpcs": [
-      "wss://moonbeam-rpc.dwellir.com",
-      "wss://wss.api.moonbeam.network",
-      "wss://1rpc.io/glmr",
-      "wss://moonbeam.unitedbloc.com"
-    ],
-    "para_id": 2004,
-    "relay_chain": "Polkadot",
-    "expiry_timestamp": 1709740246
+    "name": "Ares Odyssey",
+    "para_id": 2028,
+    "relay_chain": "Kusama",
+    "rpcs": [],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.aresprotocol.io/",
+    "info": "odyssey"
   },
   {
     "name": "Astar",
-    "rpcs": [
-      "wss://astar.public.curie.radiumblock.co/ws",
-      "wss://rpc.astar.network",
-      "wss://astar-rpc.dwellir.com",
-      "wss://1rpc.io/astr"
-    ],
     "para_id": 2006,
     "relay_chain": "Polkadot",
-    "expiry_timestamp": 1709740246
+    "rpcs": [
+      "wss://rpc.astar.network",
+      "wss://1rpc.io/astr",
+      "wss://astar.public.blastapi.io",
+      "wss://astar-rpc.dwellir.com",
+      "wss://astar.api.onfinality.io/public-ws",
+      "wss://astar.public.curie.radiumblock.co/ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://astar.network",
+    "info": "astar"
   },
   {
-    "name": "HydraDX",
+    "name": "Aventus",
+    "para_id": 2056,
+    "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://hydradx-rpc.dwellir.com",
-      "wss://rpc.hydradx.cloud"
+      "wss://public-rpc.mainnet.aventus.network"
     ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.aventus.io/",
+    "info": "aventus"
+  },
+  {
+    "name": "Bifrost",
+    "para_id": 2030,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://bifrost-polkadot-rpc.dwellir.com",
+      "wss://bifrost-polkadot.ibp.network",
+      "wss://bifrost-polkadot.dotters.network",
+      "wss://hk.p.bifrost-rpc.liebi.com/ws",
+      "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
+      "wss://bifrost.public.curie.radiumblock.co/ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://crowdloan.bifrost.app",
+    "info": "bifrost"
+  },
+  {
+    "name": "Bitgreen",
+    "para_id": 2048,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://mainnet.bitgreen.org"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.bitgreen.org",
+    "info": "bitgreen"
+  },
+  {
+    "name": "Centrifuge",
+    "para_id": 2031,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://fullnode.centrifuge.io",
+      "wss://centrifuge-rpc.dwellir.com",
+      "wss://rpc-centrifuge.luckyfriday.io",
+      "wss://centrifuge-parachain.api.onfinality.io/public-ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://centrifuge.io",
+    "info": "centrifuge"
+  },
+  {
+    "name": "Clover",
+    "para_id": 2002,
+    "relay_chain": "Polkadot",
+    "rpcs": [],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://clover.finance",
+    "info": "clover"
+  },
+  {
+    "name": "Coinversation",
+    "para_id": 2027,
+    "relay_chain": "Kusama",
+    "rpcs": [],
+    "expiry_timestamp": 1731252629,
+    "homepage": "http://www.coinversation.io/",
+    "info": "coinversation"
+  },
+  {
+    "name": "Composable Finance",
+    "para_id": 2019,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://rpc.composable.finance",
+      "wss://composable-rpc.dwellir.com"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://composable.finance/",
+    "info": "composable"
+  },
+  {
+    "name": "Continuum",
+    "para_id": 3346,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://continuum-rpc-1.metaverse.network/wss"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://mnet.io/?ref=polkadotjs",
+    "info": "continuum"
+  },
+  {
+    "name": "Crust",
+    "para_id": 2008,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://crust-parachain.crustapps.net",
+      "wss://crust-parachain.crustnetwork.app",
+      "wss://crust-parachain.crustnetwork.cc",
+      "wss://crust-parachain.crustnetwork.xyz"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://crust.network",
+    "info": "crustParachain"
+  },
+  {
+    "name": "Darwinia",
+    "para_id": 2046,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://rpc.darwinia.network",
+      "wss://darwinia-rpc.dcdao.box",
+      "wss://darwinia-rpc.dwellir.com"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://darwinia.network/",
+    "info": "darwinia"
+  },
+  {
+    "name": "Efinity",
+    "para_id": 2021,
+    "relay_chain": "Polkadot",
+    "rpcs": [],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://efinity.io",
+    "info": "efinity"
+  },
+  {
+    "name": "Energy Web X",
+    "para_id": 3345,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://public-rpc.mainnet.energywebx.com/"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://energywebx.com/",
+    "info": "ewx"
+  },
+  {
+    "name": "Equilibrium",
+    "para_id": 2011,
+    "relay_chain": "Polkadot",
+    "rpcs": [],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://equilibrium.io/",
+    "info": "equilibrium"
+  },
+  {
+    "name": "Frequency",
+    "para_id": 2091,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://frequency-rpc.dwellir.com",
+      "wss://0.rpc.frequency.xyz",
+      "wss://1.rpc.frequency.xyz",
+      "wss://frequency-polkadot.api.onfinality.io/public-ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://frequency.xyz",
+    "info": "frequency"
+  },
+  {
+    "name": "Geminis",
+    "para_id": 2038,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://rpc.geminis.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://geminis.network/",
+    "info": "geminis"
+  },
+  {
+    "name": "Hashed Network",
+    "para_id": 2093,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://c1.hashed.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://hashed.network/",
+    "info": "hashed"
+  },
+  {
+    "name": "Hydration",
     "para_id": 2034,
     "relay_chain": "Polkadot",
-    "expiry_timestamp": 1709740246
+    "rpcs": [
+      "wss://hydradx-rpc.dwellir.com",
+      "wss://rpc.hydradx.cloud",
+      "wss://rpc.helikon.io/hydradx",
+      "wss://hydradx.paras.ibp.network",
+      "wss://hydration.dotters.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://hydration.net/",
+    "info": "hydradx"
+  },
+  {
+    "name": "Hyperbridge (Nexus)",
+    "para_id": 3367,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://hyperbridge-nexus-rpc.blockops.network",
+      "wss://nexus.ibp.network",
+      "wss://nexus.dotters.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://hyperbridge.network",
+    "info": "hyperbridge"
+  },
+  {
+    "name": "Integritee Network",
+    "para_id": 3359,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://integritee-rpc.dwellir.com",
+      "wss://polkadot.api.integritee.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://dot.crowdloan.integritee.network/",
+    "info": "integritee"
+  },
+  {
+    "name": "InvArch",
+    "para_id": 3340,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://invarch-rpc.dwellir.com"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://invarch.network/",
+    "info": "invarch"
+  },
+  {
+    "name": "KILT Spiritnet",
+    "para_id": 2086,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://spiritnet.kilt.io/",
+      "wss://kilt-rpc.dwellir.com",
+      "wss://kilt.ibp.network",
+      "wss://kilt.dotters.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.kilt.io/",
+    "info": "kilt"
+  },
+  {
+    "name": "Litentry",
+    "para_id": 2013,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://litentry-rpc.dwellir.com",
+      "wss://rpc.litentry-parachain.litentry.io"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.litentry.com/",
+    "info": "litentry"
+  },
+  {
+    "name": "Logion",
+    "para_id": 3354,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://para-rpc01.logion.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://logion.network/",
+    "info": "logion"
+  },
+  {
+    "name": "Manta",
+    "para_id": 2104,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://ws.manta.systems"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://manta.network",
+    "info": "manta"
+  },
+  {
+    "name": "Moonbeam",
+    "para_id": 2004,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://moonbeam-rpc.publicnode.com",
+      "wss://moonbeam-rpc.dwellir.com",
+      "wss://moonbeam.ibp.network",
+      "wss://moonbeam.dotters.network",
+      "wss://wss.api.moonbeam.network",
+      "wss://moonbeam.api.onfinality.io/public-ws",
+      "wss://moonbeam.public.curie.radiumblock.co/ws",
+      "wss://moonbeam.unitedbloc.com"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://moonbeam.network/networks/moonbeam/",
+    "info": "moonbeam"
+  },
+  {
+    "name": "NeuroWeb",
+    "para_id": 2043,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://neuroweb-rpc.dwellir.com",
+      "wss://parachain-rpc.origin-trail.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://neuroweb.ai",
+    "info": "neuroweb"
+  },
+  {
+    "name": "Nodle",
+    "para_id": 2026,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://nodle-rpc.dwellir.com",
+      "wss://nodle-parachain.api.onfinality.io/public-ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://nodle.com",
+    "info": "nodle"
+  },
+  {
+    "name": "OAK Network",
+    "para_id": 2090,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://rpc.oak.tech"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://oak.tech",
+    "info": "oak"
+  },
+  {
+    "name": "OmniBTC",
+    "para_id": 2053,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://psc-parachain.coming.chat"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.omnibtc.finance",
+    "info": "omnibtc"
+  },
+  {
+    "name": "Parallel",
+    "para_id": 2012,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://parallel-rpc.dwellir.com",
+      "wss://polkadot-parallel-rpc.parallel.fi"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://parallel.fi",
+    "info": "parallel"
+  },
+  {
+    "name": "Phala Network",
+    "para_id": 2035,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://phala-rpc.dwellir.com",
+      "wss://rpc.helikon.io/phala",
+      "wss://phala.api.onfinality.io/public-ws",
+      "wss://api.phala.network/ws",
+      "wss://phala.public.curie.radiumblock.co/ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://phala.network",
+    "info": "phala"
+  },
+  {
+    "name": "Polkadex",
+    "para_id": 2040,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://polkadex-parachain-rpc.dwellir.com",
+      "wss://polkadex-parachain.api.onfinality.io/public-ws",
+      "wss://polkadex-parachain.public.curie.radiumblock.co/ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://polkadex.trade/",
+    "info": "polkadex"
+  },
+  {
+    "name": "Robonomics",
+    "para_id": 3388,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://polkadot.rpc.robonomics.network/"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "http://robonomics.network/",
+    "info": "robonomics"
+  },
+  {
+    "name": "SORA",
+    "para_id": 2025,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://ws.parachain-collator-3.pc3.sora2.soramitsu.co.jp"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://sora.org/",
+    "info": "sora"
+  },
+  {
+    "name": "SubDAO",
+    "para_id": 2018,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://parachain-rpc.subdao.org"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://subdao.network/",
+    "info": "subdao"
+  },
+  {
+    "name": "Subsocial",
+    "para_id": 2101,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://para.subsocial.network",
+      "wss://subsocial-rpc.dwellir.com"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://subsocial.network/",
+    "info": "subsocial"
+  },
+  {
+    "name": "t3rn",
+    "para_id": 3333,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://ws.t3rn.io"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.t3rn.io/",
+    "info": "t3rn"
+  },
+  {
+    "name": "Unique Network",
+    "para_id": 2037,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://unique-rpc.dwellir.com",
+      "wss://ws.unique.network",
+      "wss://unique.ibp.network",
+      "wss://unique.dotters.network",
+      "wss://us-ws.unique.network",
+      "wss://asia-ws.unique.network",
+      "wss://eu-ws.unique.network"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://unique.network/",
+    "info": "unique"
+  },
+  {
+    "name": "Watr Network",
+    "para_id": 2058,
+    "relay_chain": "Polkadot",
+    "rpcs": [],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.watr.org/",
+    "info": "watr"
   },
   {
     "name": "Zeitgeist",
-    "rpcs": [
-      "wss://zeitgeist-rpc.dwellir.com",
-      "wss://main.rpc.zeitgeist.pm/ws"
-    ],
     "para_id": 2092,
     "relay_chain": "Polkadot",
-    "expiry_timestamp": 1709740246
+    "rpcs": [
+      "wss://zeitgeist.api.onfinality.io/public-ws",
+      "wss://main.rpc.zeitgeist.pm/ws"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://zeitgeist.pm",
+    "info": "zeitgeist"
   }
 ]
+
+
