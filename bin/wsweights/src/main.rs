@@ -9,30 +9,31 @@ use tokio::time::{timeout, Duration};
 use tokio_stream::wrappers::TcpListenerStream;
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
 use types::{Parachain, Timestamp, WeightConsumption};
+use std::collections::HashMap;
 
 const LOG_TARGET: &str = "tracker";
 
 // Data structures for consumption updates sent over websocket
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct ConsumptionUpdate {
-	para_id: u32,
-	ref_time: RefTime,
-	proof_size: ProofSize,
-	total_proof_size: f32,
+    para_id: u32,
+    ref_time: RefTime,
+    proof_size: ProofSize,
+    total_proof_size: f32,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct RefTime {
-	normal: f32,
-	operational: f32,
-	mandatory: f32,
+    normal: f32,
+    operational: f32,
+    mandatory: f32,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct ProofSize {
-	normal: f32,
-	operational: f32,
-	mandatory: f32,
+    normal: f32,
+    operational: f32,
+    mandatory: f32,
 }
 
 #[subxt::subxt(runtime_metadata_path = "../../artifacts/metadata.scale")]
@@ -40,24 +41,29 @@ mod polkadot {}
 
 // Type alias for tracking connected websocket clients
 type ClientList =
-	Arc<RwLock<Vec<Arc<RwLock<tokio_tungstenite::WebSocketStream<tokio::net::TcpStream>>>>>>;
+    Arc<RwLock<Vec<Arc<RwLock<tokio_tungstenite::WebSocketStream<tokio::net::TcpStream>>>>>>;
+
+// Type alias for the cache of the last messages
+type Cache = Arc<RwLock<HashMap<u32, ConsumptionUpdate>>>;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::builder().filter_level(log::LevelFilter::Debug).init();
 
     let clients: ClientList = Arc::new(RwLock::new(Vec::new()));
+    let cache: Cache = Arc::new(RwLock::new(HashMap::new())); // Initialize the cache
 
     // Start websocket server for client connections
-    let clients_clone = Arc::clone(&clients); // Clone the Arc reference
+    let clients_clone = Arc::clone(&clients);
+    let cache_clone = Arc::clone(&cache); // Pass the cache to the WebSocket server
     tokio::spawn(async move {
-        if let Err(e) = start_websocket_server(clients_clone).await {
+        if let Err(e) = start_websocket_server(clients_clone, cache_clone).await {
             log::error!("WebSocket server encountered an error: {:?}", e);
         }
     });
 
     // Start tracking parachain data and send updates to websocket clients
-    if let Err(e) = start_tracking(0, clients.clone()).await {
+    if let Err(e) = start_tracking(0, clients.clone(), cache.clone()).await {
         log::error!("Tracking system encountered an error: {:?}", e);
     }
 
@@ -68,6 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn handle_new_connection(
     stream: tokio::net::TcpStream,
     clients: ClientList,
+    cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Perform WebSocket handshake
     let ws_stream = match accept_async(stream).await {
@@ -82,37 +89,23 @@ async fn handle_new_connection(
 
     let ws_stream = Arc::new(RwLock::new(ws_stream));
 
-    // Broadcast initial message upon connection (e.g., latest block data)
-    let initial_message = create_initial_message()?;
-    ws_stream.write().await.send(Message::Text(initial_message)).await?;
-
     // Add the WebSocket stream to the list of clients
-    clients.write().await.push(ws_stream);
+    clients.write().await.push(ws_stream.clone());
+
+    // Send the cached messages to the newly connected client
+    let cache_read_guard = cache.read().await;
+    for (_, message) in cache_read_guard.iter() {
+        let message_json = serde_json::to_string(message)?;
+        ws_stream.write().await.send(Message::Text(message_json)).await?;
+    }
 
     Ok(())
 }
 
-fn create_initial_message() -> Result<String, Box<dyn std::error::Error>> {
-    let initial_data = ConsumptionUpdate {
-        para_id: 0,  // Placeholder data, replace with actual latest data
-        ref_time: RefTime {
-            normal: 0.0,
-            operational: 0.0,
-            mandatory: 0.0,
-        },
-        proof_size: ProofSize {
-            normal: 0.0,
-            operational: 0.0,
-            mandatory: 0.0,
-        },
-        total_proof_size: 0.0,
-    };
-
-    let message = serde_json::to_string(&initial_data)?;
-    Ok(message)
-}
-
-async fn start_websocket_server(clients: ClientList) -> Result<(), Box<dyn std::error::Error>> {
+async fn start_websocket_server(
+    clients: ClientList,
+    cache: Cache,
+) -> Result<(), Box<dyn std::error::Error>> {
     let addr = "127.0.0.1:9001".to_string();
     let listener = TcpListener::bind(&addr).await?;
     let stream = TcpListenerStream::new(listener);
@@ -120,10 +113,11 @@ async fn start_websocket_server(clients: ClientList) -> Result<(), Box<dyn std::
 
     stream
         .for_each(|stream| {
-            let clients = Arc::clone(&clients); // Use Arc::clone instead of clone for clarity
+            let clients = Arc::clone(&clients);
+            let cache = Arc::clone(&cache); // Clone the cache reference for each new connection
             async move {
                 if let Ok(stream) = stream {
-                    if let Err(e) = handle_new_connection(stream, clients).await {
+                    if let Err(e) = handle_new_connection(stream, clients, cache).await {
                         log::error!("Failed to handle new WebSocket connection: {:?}", e);
                     }
                 } else {
@@ -136,19 +130,19 @@ async fn start_websocket_server(clients: ClientList) -> Result<(), Box<dyn std::
     Ok(())
 }
 
-// Handle each new websocket connection (already handled in start_websocket_server)
-
 // Start tracking parachain consumption and send updates to websocket clients
 async fn start_tracking(
     rpc_index: usize,
     clients: ClientList,
+    cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut task_set = tokio::task::JoinSet::new();
 
     for para in registered_paras() {
         let clients_clone = Arc::clone(&clients);
+        let cache_clone = Arc::clone(&cache);
         task_set.spawn(async move {
-            track_weight_consumption(para, rpc_index, clients_clone).await;
+            track_weight_consumption(para, rpc_index, clients_clone, cache_clone).await;
         });
     }
 
@@ -163,64 +157,70 @@ async fn start_tracking(
 }
 
 // Track weight consumption for each parachain and broadcast updates to websocket clients
-async fn track_weight_consumption(para: Parachain, rpc_index: usize, clients: ClientList) {
-	let Some(rpc) = para.rpcs.get(rpc_index) else {
-		log::error!(
-			target: LOG_TARGET,
-			"{}-{} - doesn't have an rpc with index: {}",
-			para.relay_chain, para.para_id, rpc_index,
-		);
-		return;
-	};
+async fn track_weight_consumption(
+    para: Parachain,
+    rpc_index: usize,
+    clients: ClientList,
+    cache: Cache,
+) {
+    let Some(rpc) = para.rpcs.get(rpc_index) else {
+        log::error!(
+            target: LOG_TARGET,
+            "{}-{} - doesn't have an rpc with index: {}",
+            para.relay_chain, para.para_id, rpc_index,
+        );
+        return;
+    };
 
-	log::info!("{}-{} - Starting to track consumption.", para.relay_chain, para.para_id);
-	let result = OnlineClient::<PolkadotConfig>::from_url(rpc).await;
+    log::info!("{}-{} - Starting to track consumption.", para.relay_chain, para.para_id);
+    let result = OnlineClient::<PolkadotConfig>::from_url(rpc).await;
 
-	if let Ok(api) = result {
-		if let Err(err) = track_blocks(api, para.clone(), rpc_index, clients).await {
-			log::error!(
-				target: LOG_TARGET,
-				"{}-{} - Failed to track new block: {:?}",
-				para.relay_chain,
-				para.para_id,
-				err
-			);
-		}
-	} else {
-		log::error!(
-			target: LOG_TARGET,
-			"{}-{} - Failed to create online client: {:?}",
-			para.relay_chain,
-			para.para_id,
-			result
-		);
-	}
+    if let Ok(api) = result {
+        if let Err(err) = track_blocks(api, para.clone(), rpc_index, clients, cache).await {
+            log::error!(
+                target: LOG_TARGET,
+                "{}-{} - Failed to track new block: {:?}",
+                para.relay_chain,
+                para.para_id,
+                err
+            );
+        }
+    } else {
+        log::error!(
+            target: LOG_TARGET,
+            "{}-{} - Failed to create online client: {:?}",
+            para.relay_chain,
+            para.para_id,
+            result
+        );
+    }
 }
 
 async fn track_blocks(
-	api: OnlineClient<PolkadotConfig>,
-	para: Parachain,
-	rpc_index: usize,
-	clients: ClientList,
+    api: OnlineClient<PolkadotConfig>,
+    para: Parachain,
+    rpc_index: usize,
+    clients: ClientList,
+    cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	log::info!(
-		target: LOG_TARGET,
-		"{}-{} - Subscribing to finalized blocks",
-		para.relay_chain,
-		para.para_id
-	);
+    log::info!(
+        target: LOG_TARGET,
+        "{}-{} - Subscribing to finalized blocks",
+        para.relay_chain,
+        para.para_id
+    );
 
-	let mut blocks_sub = api
-		.blocks()
-		.subscribe_finalized()
-		.await
-		.map_err(|_| "Failed to subscribe to finalized blocks")?;
+    let mut blocks_sub = api
+        .blocks()
+        .subscribe_finalized()
+        .await
+        .map_err(|_| "Failed to subscribe to finalized blocks")?;
 
-	while let Some(Ok(block)) = blocks_sub.next().await {
-		note_new_block(api.clone(), para.clone(), rpc_index, block, clients.clone()).await?;
-	}
+    while let Some(Ok(block)) = blocks_sub.next().await {
+        note_new_block(api.clone(), para.clone(), rpc_index, block, clients.clone(), cache.clone()).await?;
+    }
 
-	Ok(())
+    Ok(())
 }
 
 // Collect consumption data for each finalized block and broadcast to websocket clients
@@ -230,6 +230,7 @@ async fn note_new_block(
     rpc_index: usize,
     block: Block<PolkadotConfig, OnlineClient<PolkadotConfig>>,
     clients: ClientList,
+    cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let block_number = block.header().number;
     let timestamp = timestamp_at(api.clone(), block.hash()).await?;
@@ -251,6 +252,12 @@ async fn note_new_block(
     };
 
     let consumption_json = serde_json::to_string(&consumption_update)?;
+
+    // Store the latest message in the cache
+    {
+        let mut cache_write_guard = cache.write().await;
+        cache_write_guard.insert(para.para_id, consumption_update.clone());
+    }
 
     // Clone the list of clients while holding the read lock, then release it.
     let client_list_snapshot;
@@ -275,6 +282,7 @@ async fn note_new_block(
 
     Ok(())
 }
+
 async fn remove_disconnected_clients(
     clients: ClientList,
     disconnected_clients: Vec<usize>,
@@ -309,70 +317,71 @@ async fn remove_disconnected_clients(
 
 // Fetch weight consumption data for the given block
 async fn weight_consumption(
-	api: OnlineClient<PolkadotConfig>,
-	block_number: u32,
-	timestamp: Timestamp,
+    api: OnlineClient<PolkadotConfig>,
+    block_number: u32,
+    timestamp: Timestamp,
 ) -> Result<WeightConsumption, Box<dyn std::error::Error>> {
-	let weight_query = polkadot::storage().system().block_weight();
-	let weight_consumed = api
-		.storage()
-		.at_latest()
-		.await?
-		.fetch(&weight_query)
-		.await?
-		.ok_or("Failed to query consumption")?;
+    let weight_query = polkadot::storage().system().block_weight();
+    let weight_consumed = api
+        .storage()
+        .at_latest()
+        .await?
+        .fetch(&weight_query)
+        .await?
+        .ok_or("Failed to query consumption")?;
 
-	let weight_limit_query = polkadot::constants().system().block_weights();
-	let weight_limit = api.constants().at(&weight_limit_query)?;
+    let weight_limit_query = polkadot::constants().system().block_weights();
+    let weight_limit = api.constants().at(&weight_limit_query)?;
 
-	let proof_limit = weight_limit.max_block.proof_size;
-	let ref_time_limit = weight_limit.max_block.ref_time;
+    let proof_limit = weight_limit.max_block.proof_size;
+    let ref_time_limit = weight_limit.max_block.ref_time;
 
-	let normal_ref_time = weight_consumed.normal.ref_time;
-	let operational_ref_time = weight_consumed.operational.ref_time;
-	let mandatory_ref_time = weight_consumed.mandatory.ref_time;
+    let normal_ref_time = weight_consumed.normal.ref_time;
+    let operational_ref_time = weight_consumed.operational.ref_time;
+    let mandatory_ref_time = weight_consumed.mandatory.ref_time;
 
-	let normal_proof_size = weight_consumed.normal.proof_size;
-	let operational_proof_size = weight_consumed.operational.proof_size;
-	let mandatory_proof_size = weight_consumed.mandatory.proof_size;
+    let normal_proof_size = weight_consumed.normal.proof_size;
+    let operational_proof_size = weight_consumed.operational.proof_size;
+    let mandatory_proof_size = weight_consumed.mandatory.proof_size;
 
-	// Calculate the total proof size
-	let total_proof_size = normal_proof_size + operational_proof_size + mandatory_proof_size;
+    // Calculate the total proof size
+    let total_proof_size = normal_proof_size + operational_proof_size + mandatory_proof_size;
 
-	let consumption = WeightConsumption {
-		block_number,
-		timestamp,
-		ref_time: (
-			normal_ref_time as f32 / ref_time_limit as f32,
-			operational_ref_time as f32 / ref_time_limit as f32,
-			mandatory_ref_time as f32 / ref_time_limit as f32,
-		)
-			.into(),
-		proof_size: (
-			normal_proof_size as f32 / proof_limit as f32,
-			operational_proof_size as f32 / proof_limit as f32,
-			mandatory_proof_size as f32 / proof_limit as f32,
-		)
-			.into(),
-		total_proof_size: total_proof_size as f32 / proof_limit as f32,
-	};
+    let consumption = WeightConsumption {
+        block_number,
+        timestamp,
+        ref_time: (
+            normal_ref_time as f32 / ref_time_limit as f32,
+            operational_ref_time as f32 / ref_time_limit as f32,
+            mandatory_ref_time as f32 / ref_time_limit as f32,
+        )
+            .into(),
+        proof_size: (
+            normal_proof_size as f32 / proof_limit as f32,
+            operational_proof_size as f32 / proof_limit as f32,
+            mandatory_proof_size as f32 / proof_limit as f32,
+        )
+            .into(),
+        total_proof_size: total_proof_size as f32 / proof_limit as f32,
+    };
 
-	Ok(consumption)
+    Ok(consumption)
 }
 
 // Fetch the timestamp for the given block
 async fn timestamp_at(
-	api: OnlineClient<PolkadotConfig>,
-	block_hash: subxt::utils::H256,
+    api: OnlineClient<PolkadotConfig>,
+    block_hash: subxt::utils::H256,
 ) -> Result<Timestamp, Box<dyn std::error::Error>> {
-	let timestamp_query = polkadot::storage().timestamp().now();
+    let timestamp_query = polkadot::storage().timestamp().now();
 
-	let timestamp = api
-		.storage()
-		.at(block_hash)
-		.fetch(&timestamp_query)
-		.await?
-		.ok_or("Failed to query timestamp")?;
+    let timestamp = api
+        .storage()
+        .at(block_hash)
+        .fetch(&timestamp_query)
+        .await?
+        .ok_or("Failed to query timestamp")?;
 
-	Ok(timestamp)
+    Ok(timestamp)
 }
+
