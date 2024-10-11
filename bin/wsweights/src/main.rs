@@ -17,6 +17,7 @@ struct ConsumptionUpdate {
     para_id: u32,
     ref_time: RefTime,
     proof_size: ProofSize,
+    total_proof_size: f32,
 }
 
 #[derive(Serialize)]
@@ -187,6 +188,7 @@ async fn note_new_block(
             operational: consumption.proof_size.operational,
             mandatory: consumption.proof_size.mandatory,
         },
+        total_proof_size: consumption.total_proof_size,
     };
 
     let consumption_json = serde_json::to_string(&consumption_update)?;
@@ -230,6 +232,9 @@ async fn weight_consumption(
     let operational_proof_size = weight_consumed.operational.proof_size;
     let mandatory_proof_size = weight_consumed.mandatory.proof_size;
 
+    // Calculate the total proof size
+    let total_proof_size = normal_proof_size + operational_proof_size + mandatory_proof_size;
+
     let consumption = WeightConsumption {
         block_number,
         timestamp,
@@ -245,6 +250,7 @@ async fn weight_consumption(
             round_to(mandatory_proof_size as f32 / proof_limit as f32, 3),
         )
         .into(),
+        total_proof_size: round_to(total_proof_size as f32 / proof_limit as f32, 3),  // <-- Correct field added
     };
 
     Ok(consumption)

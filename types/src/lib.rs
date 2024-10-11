@@ -90,6 +90,7 @@ pub struct WeightConsumption {
 	pub ref_time: DispatchClassConsumption,
 	/// The proof size over all dispatch classes.
 	pub proof_size: DispatchClassConsumption,
+        pub total_proof_size: f32,
 }
 
 #[derive(Default, Debug, Serialize, PartialEq, Deserialize, Clone)]
