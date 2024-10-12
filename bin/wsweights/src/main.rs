@@ -8,8 +8,10 @@ use tokio::sync::RwLock;
 use tokio::time::{timeout, Duration};
 use tokio_stream::wrappers::TcpListenerStream;
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
-use types::{Parachain, Timestamp, WeightConsumption};
+use types::{Parachain, Timestamp, WeightConsumption, RelayChain};
 use std::collections::HashMap;
+use std::env;
+use dotenv::dotenv;
 
 const LOG_TARGET: &str = "tracker";
 
@@ -17,6 +19,7 @@ const LOG_TARGET: &str = "tracker";
 #[derive(Serialize, Clone)]
 struct ConsumptionUpdate {
     para_id: u32,
+    relay: RelayChain,
     ref_time: RefTime,
     proof_size: ProofSize,
     total_proof_size: f32,
@@ -106,7 +109,15 @@ async fn start_websocket_server(
     clients: ClientList,
     cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "127.0.0.1:9001".to_string();
+    dotenv().ok(); // Load environment variables from `.env` file (optional)
+
+    // Read the IP address and port from environment variables, or default to "127.0.0.1:9001"
+    let ip = env::var("WEBSOCKET_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = env::var("WEBSOCKET_PORT").unwrap_or_else(|_| "9001".to_string());
+    
+    // Combine IP and port into the full address
+    let addr = format!("{}:{}", ip, port);
+    
     let listener = TcpListener::bind(&addr).await?;
     let stream = TcpListenerStream::new(listener);
     log::debug!("WebSocket server started at {}", addr);
@@ -238,6 +249,7 @@ async fn note_new_block(
 
     let consumption_update = ConsumptionUpdate {
         para_id: para.para_id,
+        relay: para.relay_chain,
         ref_time: RefTime {
             normal: consumption.ref_time.normal,
             operational: consumption.ref_time.operational,

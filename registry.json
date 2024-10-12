@@ -1,5 +1,109 @@
 [
   {
+    "name": "Polkadot",
+    "rpcs": [
+      "wss://rpc-polkadot.luckyfriday.io",
+      "wss://polkadot-rpc.dwellir.com"
+    ],
+    "para_id": 1,
+    "relay_chain": "Polkadot",
+    "expiry_timestamp": 1709740246
+  },
+  {
+    "name": "Kusama",
+    "rpcs": [
+      "wss://rpc-kusama.luckyfriday.io",
+      "wss://kusama-rpc.dwellir.com"
+    ],
+    "para_id": 2,
+    "relay_chain": "Kusama",
+    "expiry_timestamp": 1709740246
+  },
+  {
+    "name": "AssetHub",
+    "para_id": 1000,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://asset-hub-polkadot-rpc.dwellir.com",
+      "wss://statemint-rpc-tn.dwellir.com",
+      "wss://sys.ibp.network/asset-hub-polkadot",
+      "wss://asset-hub-polkadot.dotters.network",
+      "wss://rpc-asset-hub-polkadot.luckyfriday.io",
+      "wss://statemint.api.onfinality.io/public-ws",
+      "wss://polkadot-asset-hub-rpc.polkadot.io",
+      "wss://statemint.public.curie.radiumblock.co/ws",
+      "wss://dot-rpc.stakeworld.io/assethub"
+    ],
+    "expiry_timestamp": 1733858229,
+    "homepage": "N/A",
+    "info": "polkadotassethub"
+  },
+  {
+    "name": "BridgeHub",
+    "para_id": 1002,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://bridge-hub-polkadot-rpc.dwellir.com",
+      "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
+      "wss://sys.ibp.network/bridgehub-polkadot",
+      "wss://bridge-hub-polkadot.dotters.network",
+      "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
+      "wss://bridgehub-polkadot.api.onfinality.io/public-ws",
+      "wss://polkadot-bridge-hub-rpc.polkadot.io",
+      "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
+      "wss://dot-rpc.stakeworld.io/bridgehub"
+    ],
+    "expiry_timestamp": 1733858229,
+    "homepage": "N/A",
+    "info": "polkadotbridgehub"
+  },
+  {
+    "name": "Collectives",
+    "para_id": 1001,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://collectives-polkadot-rpc.dwellir.com",
+      "wss://polkadot-collectives-rpc-tn.dwellir.com",
+      "wss://sys.ibp.network/collectives-polkadot",
+      "wss://collectives-polkadot.dotters.network",
+      "wss://rpc-collectives-polkadot.luckyfriday.io",
+      "wss://collectives.api.onfinality.io/public-ws",
+      "wss://polkadot-collectives-rpc.polkadot.io",
+      "wss://collectives.public.curie.radiumblock.co/ws",
+      "wss://dot-rpc.stakeworld.io/collectives"
+    ],
+    "expiry_timestamp": 1733858229,
+    "homepage": "N/A",
+    "info": "polkadotcollectives"
+  },
+  {
+    "name": "Coretime",
+    "para_id": 1005,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://coretime-polkadot.dotters.network",
+      "wss://polkadot-coretime-rpc.polkadot.io"
+    ],
+    "expiry_timestamp": 1733858229,
+    "homepage": "N/A",
+    "info": "polkadotcoretime"
+  },
+  {
+    "name": "People",
+    "para_id": 1004,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://sys.ibp.network/people-polkadot",
+      "wss://people-polkadot.dotters.network",
+      "wss://rpc-people-polkadot.luckyfriday.io",
+      "wss://polkadot-people-rpc.polkadot.io",
+      "wss://people-polkadot.public.curie.radiumblock.co/ws"
+    ],
+    "expiry_timestamp": 1733858229,
+    "homepage": "N/A",
+    "info": "polkadotpeople"
+  },
+  {
     "name": "Acala",
     "para_id": 2000,
     "relay_chain": "Polkadot",
@@ -280,6 +384,19 @@
     "info": "integritee"
   },
   {
+    "name": "Interlay",
+    "para_id": 2032,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://interlay-rpc.dwellir.com",
+      "wss://api.interlay.io/parachain",
+      "wss://rpc-interlay.luckyfriday.io"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://interlay.io",
+    "info": "interlay"
+  },
+  {
     "name": "InvArch",
     "para_id": 3340,
     "relay_chain": "Polkadot",
@@ -303,6 +420,18 @@
     "expiry_timestamp": 1731252629,
     "homepage": "https://www.kilt.io/",
     "info": "kilt"
+  },
+  {
+    "name": "Laos",
+    "para_id": 3370,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://laos-rpc.dwellir.com",
+      "wss://rpc.laos.laosfoundation.io"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://laosnetwork.io",
+    "info": "litentry"
   },
   {
     "name": "Litentry",
@@ -343,18 +472,25 @@
     "para_id": 2004,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://moonbeam-rpc.publicnode.com",
       "wss://moonbeam-rpc.dwellir.com",
-      "wss://moonbeam.ibp.network",
-      "wss://moonbeam.dotters.network",
       "wss://wss.api.moonbeam.network",
-      "wss://moonbeam.api.onfinality.io/public-ws",
-      "wss://moonbeam.public.curie.radiumblock.co/ws",
+      "wss://1rpc.io/glmr",
       "wss://moonbeam.unitedbloc.com"
     ],
     "expiry_timestamp": 1731252629,
     "homepage": "https://moonbeam.network/networks/moonbeam/",
     "info": "moonbeam"
+  },
+  {
+    "name": "Mythos",
+    "para_id": 3369,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://polkadot-mythos-rpc.polkadot.io"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://mythos.foundation",
+    "info": "mythos"
   },
   {
     "name": "NeuroWeb",
@@ -428,6 +564,32 @@
     "expiry_timestamp": 1731252629,
     "homepage": "https://phala.network",
     "info": "phala"
+  },
+  {
+    "name": "Pendulum",
+    "para_id": 2094,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://rpc-pendulum.prd.pendulumchain.tech"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://pendulumchain.org",
+    "info": "pendulum"
+  },
+  {
+    "name": "Polimec",
+    "para_id": 3344,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://polimec.rpc.amforc.com",
+      "wss://rpc.helikon.io/polimec",
+      "wss://polimec.ibp.network",
+      "wss://polimec.dotters.network",
+      "wss://rpc.polimec.org"
+    ],
+    "expiry_timestamp": 1731252629,
+    "homepage": "https://www.polimec.org",
+    "info": "polimec"
   },
   {
     "name": "Polkadex",
