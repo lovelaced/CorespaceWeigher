@@ -1,0 +1,15 @@
+{
+  "name": "registry-builder",
+  "version": "1.0.0",
+  "description": "Registry builder script for Polkadot/Kusama chains",
+  "main": "generate-registry.js",
+  "scripts": {
+    "build": "node generate-registry.js"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.25.8",
+    "@babel/traverse": "^7.25.7",
+  },
+  "author": "",
+  "license": "ISC"
+}

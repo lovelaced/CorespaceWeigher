@@ -20,6 +20,8 @@ const LOG_TARGET: &str = "tracker";
 struct ConsumptionUpdate {
     para_id: u32,
     relay: RelayChain,
+    block_number: u32,
+    extrinsics_num: usize,
     ref_time: RefTime,
     proof_size: ProofSize,
     total_proof_size: f32,
@@ -244,12 +246,16 @@ async fn note_new_block(
     cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let block_number = block.header().number;
+    let extrinsics = block.extrinsics().await?;
+    let extrinsics_num = extrinsics.len();
     let timestamp = timestamp_at(api.clone(), block.hash()).await?;
     let consumption = weight_consumption(api, block_number, timestamp).await?;
 
     let consumption_update = ConsumptionUpdate {
         para_id: para.para_id,
         relay: para.relay_chain,
+        block_number: block_number,
+        extrinsics_num: extrinsics_num,
         ref_time: RefTime {
             normal: consumption.ref_time.normal,
             operational: consumption.ref_time.operational,
