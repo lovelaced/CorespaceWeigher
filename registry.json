@@ -44,7 +44,6 @@
     "para_id": 2090,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://rpc.basilisk.cloud",
       "wss://basilisk-rpc.dwellir.com"
     ],
     "expiry_timestamp": 1731252629
@@ -809,7 +808,6 @@
     "para_id": 2012,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://parallel-rpc.dwellir.com",
       "wss://polkadot-parallel-rpc.parallel.fi"
     ],
     "expiry_timestamp": 1731252629

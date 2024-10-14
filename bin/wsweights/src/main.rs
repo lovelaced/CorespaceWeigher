@@ -1,4 +1,3 @@
-use futures::StreamExt;
 use serde::Serialize;
 use shared::registry::registered_paras;
 use std::collections::HashMap;
@@ -118,10 +117,16 @@ async fn start_sse_server(
                     let cache = cache.read().await;
                     for (_, message) in cache.iter() {
                         let data = serde_json::to_string(message).unwrap();
-                        let _ = tx.send(Ok(Event::default().data(data)));
+                        // Generate an event ID based on para_id and block_number
+                        let event_id = format!("{}-{}", message.para_id, message.block_number);
+                        // Create the SSE event with the same format as regular messages
+                        let sse_event = Event::default()
+                            .id(event_id)
+                            .event("consumptionUpdate")
+                            .data(data);
+                        let _ = tx.send(Ok(sse_event));
                     }
                 }
-
                 // Add the sender to the list of clients
                 clients.write().await.push(tx);
 
