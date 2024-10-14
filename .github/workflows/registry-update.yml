@@ -60,7 +60,8 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.PR_SECRET }}
-          branch: ${{ steps.commit_and_push.outputs.branch_name }}
+          head-branch: ${{ steps.commit_and_push.outputs.branch_name }}
+          base-branch: main
           title: "Automated registry update"
           body: |
             This PR was created automatically by the weekly registry update workflow.
