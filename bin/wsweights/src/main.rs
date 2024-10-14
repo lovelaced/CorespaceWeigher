@@ -1,21 +1,21 @@
-use futures_util::{SinkExt, StreamExt};
+use futures::StreamExt;
 use serde::Serialize;
 use shared::registry::registered_paras;
+use std::collections::HashMap;
+use std::convert::Infallible;
+use std::env;
 use std::sync::Arc;
 use subxt::{blocks::Block, OnlineClient, PolkadotConfig};
-use tokio::net::TcpListener;
-use tokio::sync::RwLock;
+use tokio::sync::{mpsc, RwLock};
+use tokio::task::JoinSet;
 use tokio::time::{timeout, Duration};
-use tokio_stream::wrappers::TcpListenerStream;
-use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
-use types::{Parachain, Timestamp, WeightConsumption, RelayChain};
-use std::collections::HashMap;
-use std::env;
-use dotenv::dotenv;
+use warp::sse::Event;
+use warp::{Filter, http::Method};
+use types::{Timestamp, Parachain, WeightConsumption, RelayChain};
 
 const LOG_TARGET: &str = "tracker";
 
-// Data structures for consumption updates sent over websocket
+// Data structures for consumption updates sent over SSE
 #[derive(Serialize, Clone)]
 struct ConsumptionUpdate {
     para_id: u32,
@@ -44,9 +44,8 @@ struct ProofSize {
 #[subxt::subxt(runtime_metadata_path = "../../artifacts/metadata.scale")]
 mod polkadot {}
 
-// Type alias for tracking connected websocket clients
-type ClientList =
-    Arc<RwLock<Vec<Arc<RwLock<tokio_tungstenite::WebSocketStream<tokio::net::TcpStream>>>>>>;
+// Type alias for tracking connected SSE clients
+type Clients = Arc<RwLock<Vec<mpsc::UnboundedSender<Result<Event, Infallible>>>>>;
 
 // Type alias for the cache of the last messages
 type Cache = Arc<RwLock<HashMap<u32, ConsumptionUpdate>>>;
@@ -55,19 +54,19 @@ type Cache = Arc<RwLock<HashMap<u32, ConsumptionUpdate>>>;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::builder().filter_level(log::LevelFilter::Debug).init();
 
-    let clients: ClientList = Arc::new(RwLock::new(Vec::new()));
+    let clients: Clients = Arc::new(RwLock::new(Vec::new()));
     let cache: Cache = Arc::new(RwLock::new(HashMap::new())); // Initialize the cache
 
-    // Start websocket server for client connections
+    // Start SSE server for client connections
     let clients_clone = Arc::clone(&clients);
-    let cache_clone = Arc::clone(&cache); // Pass the cache to the WebSocket server
+    let cache_clone = Arc::clone(&cache); // Pass the cache to the SSE server
     tokio::spawn(async move {
-        if let Err(e) = start_websocket_server(clients_clone, cache_clone).await {
-            log::error!("WebSocket server encountered an error: {:?}", e);
+        if let Err(e) = start_sse_server(clients_clone, cache_clone).await {
+            log::error!("SSE server encountered an error: {:?}", e);
         }
     });
 
-    // Start tracking parachain data and send updates to websocket clients
+    // Start tracking parachain data and send updates to SSE clients
     if let Err(e) = start_tracking(0, clients.clone(), cache.clone()).await {
         log::error!("Tracking system encountered an error: {:?}", e);
     }
@@ -75,81 +74,78 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-// Start websocket server to accept client connections
-async fn handle_new_connection(
-    stream: tokio::net::TcpStream,
-    clients: ClientList,
+// Start SSE server to accept client connections
+async fn start_sse_server(
+    clients: Clients,
     cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Perform WebSocket handshake
-    let ws_stream = match accept_async(stream).await {
-        Ok(ws_stream) => ws_stream,
-        Err(e) => {
-            log::error!("Error during WebSocket handshake: {:?}", e);
-            return Err(Box::new(e));
-        }
-    };
-
-    log::debug!("New client connected from {:?}", ws_stream.get_ref().peer_addr());
-
-    let ws_stream = Arc::new(RwLock::new(ws_stream));
-
-    // Add the WebSocket stream to the list of clients
-    clients.write().await.push(ws_stream.clone());
-
-    // Send the cached messages to the newly connected client
-    let cache_read_guard = cache.read().await;
-    for (_, message) in cache_read_guard.iter() {
-        let message_json = serde_json::to_string(message)?;
-        ws_stream.write().await.send(Message::Text(message_json)).await?;
-    }
-
-    Ok(())
-}
-
-async fn start_websocket_server(
-    clients: ClientList,
-    cache: Cache,
-) -> Result<(), Box<dyn std::error::Error>> {
-    dotenv().ok(); // Load environment variables from `.env` file (optional)
+    dotenv::dotenv().ok(); // Load environment variables from `.env` file (optional)
 
     // Read the IP address and port from environment variables, or default to "127.0.0.1:9001"
     let ip = env::var("WEBSOCKET_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = env::var("WEBSOCKET_PORT").unwrap_or_else(|_| "9001".to_string());
-    
-    // Combine IP and port into the full address
-    let addr = format!("{}:{}", ip, port);
-    
-    let listener = TcpListener::bind(&addr).await?;
-    let stream = TcpListenerStream::new(listener);
-    log::debug!("WebSocket server started at {}", addr);
 
-    stream
-        .for_each(|stream| {
-            let clients = Arc::clone(&clients);
-            let cache = Arc::clone(&cache); // Clone the cache reference for each new connection
-            async move {
-                if let Ok(stream) = stream {
-                    if let Err(e) = handle_new_connection(stream, clients, cache).await {
-                        log::error!("Failed to handle new WebSocket connection: {:?}", e);
+    // Combine IP and port into the full address
+    let addr_str = format!("{}:{}", ip, port);
+    let addr: std::net::SocketAddr = addr_str.parse()?;
+
+
+    let clients_filter = warp::any().map(move || clients.clone());
+    let cache_filter = warp::any().map(move || cache.clone());
+
+    // Configure CORS
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods(vec![Method::GET])
+        .allow_headers(vec![
+            "Content-Type",
+            "Cache-Control",
+            "X-Requested-With",
+            "Last-Event-ID",
+        ]);
+
+    let routes = warp::path("events")
+        .and(warp::get())
+        .and(clients_filter)
+        .and(cache_filter)
+        .and_then(
+            |clients: Clients, cache: Cache| async move {
+                // Create an unbounded channel to send SSE events
+                let (tx, rx) = mpsc::unbounded_channel();
+
+                // Send cached messages to the new client
+                {
+                    let cache = cache.read().await;
+                    for (_, message) in cache.iter() {
+                        let data = serde_json::to_string(message).unwrap();
+                        let _ = tx.send(Ok(Event::default().data(data)));
                     }
-                } else {
-                    log::error!("Failed to accept WebSocket connection.");
                 }
-            }
-        })
-        .await;
+
+                // Add the sender to the list of clients
+                clients.write().await.push(tx);
+
+                // Create a stream from the receiver
+                let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
+
+                // Reply using server-sent events
+                Ok::<_, Infallible>(warp::sse::reply(warp::sse::keep_alive().stream(stream)))
+            },
+        )
+        .with(cors);
+
+    warp::serve(routes).run(addr).await;
 
     Ok(())
 }
 
-// Start tracking parachain consumption and send updates to websocket clients
+// Start tracking parachain consumption and send updates to SSE clients
 async fn start_tracking(
     rpc_index: usize,
-    clients: ClientList,
+    clients: Clients,
     cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut task_set = tokio::task::JoinSet::new();
+    let mut task_set = JoinSet::new();
 
     for para in registered_paras() {
         let clients_clone = Arc::clone(&clients);
@@ -169,11 +165,11 @@ async fn start_tracking(
     Ok(())
 }
 
-// Track weight consumption for each parachain and broadcast updates to websocket clients
+// Track weight consumption for each parachain and broadcast updates to SSE clients
 async fn track_weight_consumption(
     para: Parachain,
     rpc_index: usize,
-    clients: ClientList,
+    clients: Clients,
     cache: Cache,
 ) {
     let Some(rpc) = para.rpcs.get(rpc_index) else {
@@ -185,11 +181,15 @@ async fn track_weight_consumption(
         return;
     };
 
-    log::info!("{}-{} - Starting to track consumption.", para.relay_chain, para.para_id);
+    log::info!(
+        "{}-{} - Starting to track consumption.",
+        para.relay_chain,
+        para.para_id
+    );
     let result = OnlineClient::<PolkadotConfig>::from_url(rpc).await;
 
     if let Ok(api) = result {
-        if let Err(err) = track_blocks(api, para.clone(), rpc_index, clients, cache).await {
+        if let Err(err) = track_blocks(api, para.clone(), clients, cache).await {
             log::error!(
                 target: LOG_TARGET,
                 "{}-{} - Failed to track new block: {:?}",
@@ -212,8 +212,7 @@ async fn track_weight_consumption(
 async fn track_blocks(
     api: OnlineClient<PolkadotConfig>,
     para: Parachain,
-    rpc_index: usize,
-    clients: ClientList,
+    clients: Clients,
     cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
     log::info!(
@@ -230,19 +229,25 @@ async fn track_blocks(
         .map_err(|_| "Failed to subscribe to finalized blocks")?;
 
     while let Some(Ok(block)) = blocks_sub.next().await {
-        note_new_block(api.clone(), para.clone(), rpc_index, block, clients.clone(), cache.clone()).await?;
+        note_new_block(
+            api.clone(),
+            para.clone(),
+            block,
+            clients.clone(),
+            cache.clone(),
+        )
+        .await?;
     }
 
     Ok(())
 }
 
-// Collect consumption data for each finalized block and broadcast to websocket clients
+// Collect consumption data for each finalized block and broadcast to SSE clients
 async fn note_new_block(
     api: OnlineClient<PolkadotConfig>,
     para: Parachain,
-    rpc_index: usize,
     block: Block<PolkadotConfig, OnlineClient<PolkadotConfig>>,
-    clients: ClientList,
+    clients: Clients,
     cache: Cache,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let block_number = block.header().number;
@@ -254,8 +259,8 @@ async fn note_new_block(
     let consumption_update = ConsumptionUpdate {
         para_id: para.para_id,
         relay: para.relay_chain,
-        block_number: block_number,
-        extrinsics_num: extrinsics_num,
+        block_number,
+        extrinsics_num,
         ref_time: RefTime {
             normal: consumption.ref_time.normal,
             operational: consumption.ref_time.operational,
@@ -281,16 +286,21 @@ async fn note_new_block(
     let client_list_snapshot;
     {
         let clients_read_guard = clients.read().await;
-        client_list_snapshot = clients_read_guard.clone(); // Cloning the Arc<RwLock> instances
+        client_list_snapshot = clients_read_guard.clone(); // Cloning the UnboundedSender instances
     }
 
     let mut disconnected_clients = Vec::new();
 
     // Now broadcast to the cloned list
     for (i, client) in client_list_snapshot.iter().enumerate() {
-        let mut ws_stream = client.write().await;
-        if let Err(e) = ws_stream.send(Message::Text(consumption_json.clone())).await {
-            log::warn!("Client disconnected: {:?}", e);
+        let event_id = format!("{}-{}", para.para_id, block_number);
+        // Create the SSE event with custom event type and ID
+        let sse_event = Event::default()
+            .id(event_id)
+            .event("consumptionUpdate")
+            .data(consumption_json.clone());
+        if client.send(Ok(sse_event)).is_err() {
+            log::warn!("Client disconnected");
             disconnected_clients.push(i);
         }
     }
@@ -301,10 +311,7 @@ async fn note_new_block(
     Ok(())
 }
 
-async fn remove_disconnected_clients(
-    clients: ClientList,
-    disconnected_clients: Vec<usize>,
-) {
+async fn remove_disconnected_clients(clients: Clients, disconnected_clients: Vec<usize>) {
     if disconnected_clients.is_empty() {
         return;
     }
@@ -328,7 +335,10 @@ async fn remove_disconnected_clients(
             );
         }
         Err(_) => {
-            log::error!("Timeout while attempting to remove disconnected clients at {:?}", std::time::Instant::now());
+            log::error!(
+                "Timeout while attempting to remove disconnected clients at {:?}",
+                std::time::Instant::now()
+            );
         }
     }
 }
@@ -365,23 +375,23 @@ async fn weight_consumption(
     // Calculate the total proof size
     let total_proof_size = normal_proof_size + operational_proof_size + mandatory_proof_size;
 
-    let consumption = WeightConsumption {
-        block_number,
-        timestamp,
-        ref_time: (
-            normal_ref_time as f32 / ref_time_limit as f32,
-            operational_ref_time as f32 / ref_time_limit as f32,
-            mandatory_ref_time as f32 / ref_time_limit as f32,
-        )
-            .into(),
-        proof_size: (
-            normal_proof_size as f32 / proof_limit as f32,
-            operational_proof_size as f32 / proof_limit as f32,
-            mandatory_proof_size as f32 / proof_limit as f32,
-        )
-            .into(),
-        total_proof_size: total_proof_size as f32 / proof_limit as f32,
-    };
+let consumption = WeightConsumption {
+    block_number,
+    timestamp,
+    ref_time: (
+        normal_ref_time as f32 / ref_time_limit as f32,
+        operational_ref_time as f32 / ref_time_limit as f32,
+        mandatory_ref_time as f32 / ref_time_limit as f32,
+    )
+    .into(),
+    proof_size: (
+        normal_proof_size as f32 / proof_limit as f32,
+        operational_proof_size as f32 / proof_limit as f32,
+        mandatory_proof_size as f32 / proof_limit as f32,
+    )
+    .into(),
+    total_proof_size: total_proof_size as f32 / proof_limit as f32,
+};
 
     Ok(consumption)
 }
