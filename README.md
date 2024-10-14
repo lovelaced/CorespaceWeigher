@@ -3,74 +3,220 @@
 ## Overview
 
 > [!NOTE]
-> This is a fork of Region X's Corespace Weigher, which removes the CSV/historical functionality and replaces it with a streaming websocket. Not for production use.
+> This is a fork of Region X's Corespace Weigher, which removes the CSV/historical functionality and replaces it with an SSE stream. Not for production use (maybe?).
 
-The program is designed to fetch weight utilization data from a predefined set
-of parachains. The obtained weight information is then stored in the `out`
-directory as multiple CSV files.
+A Rust application that tracks weight consumption for parachains on the Polkadot network and broadcasts real-time updates to connected clients using Server-Sent Events (SSE).
 
-## Output Structure
+## Table of Contents
 
-Each parachain has its own dedicated output file, and these files are updated
-every time a new block is finalized and the weight consumption data is
-successfully queried.
+- [Overview](#overview)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Client Integration](#client-integration)
+- [API Reference](#api-reference)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Data structure
+---
 
-The data stored is the 2D weight consumption per each dispatch class.
-The data is stored in the CSV file within the following sequence:
+## Overview
 
-| block_number | timestamp             | normal_dispatch_ref_time | operational_dispatch_ref_time | mandatory_dispatch_ref_time | normal_proof_size | operational_proof_size | mandatory_proof_size |
-|--------------|-----------------------|---------------------------|-------------------------------|-----------------------------|-------------------|-------------------------|-----------------------|
-| ...          | ...                   | ...                       | ...                           | ...                         | ...               | ...                     | ...                   |
+The **Parachain Weight Consumption Tracker** is a Rust-based application designed to monitor the weight consumption of parachains on the Polkadot network. It connects to registered parachains, tracks finalized blocks, calculates weight consumption metrics, and broadcasts these updates to connected clients via a Server-Sent Events (SSE) endpoint.
 
-The percentages themselves are stored by representing them as decimal numbers; 
-for example, 50.5% is stored as 0.505 with a precision of three decimals.
+This tool is useful for developers and network operators who need to monitor the performance and resource utilization of parachains in real-time.
 
-## Building & Running
+---
 
-To compile the Corespace Weigher project run the following command from the root of the repo:
+## Features
+
+- **Real-Time Monitoring**: Tracks finalized blocks and calculates weight consumption metrics for each parachain.
+- **Server-Sent Events (SSE) Endpoint**: Provides a `/events` endpoint for clients to receive live updates.
+- **Data Caching**: Caches the latest consumption data for new clients upon connection.
+- **Concurrent Tracking**: Utilizes asynchronous tasks to track multiple parachains concurrently.
+- **CORS Support**: Configurable Cross-Origin Resource Sharing (CORS) to allow cross-origin requests.
+
+---
+
+## Prerequisites
+
+- **Network Access**: Ability to connect to parachain RPC endpoints.
+
+---
+
+## Installation
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/lovelaced/CorespaceWeigher.git
+   cd CorespaceWeigher
+   ```
+
+2. **Build the Application**
+
+   ```bash
+   cargo build --release
+   ```
+
+---
+
+## Configuration
+
+The application can be configured via environment variables or a `.env` file in the project root.
+
+### Environment Variables
+
+- **`SSE_IP`**: IP address for the SSE server to bind to. Default is `127.0.0.1`.
+- **`SSE_PORT`**: Port for the SSE server. Default is `9001`.
+
+### `.env` File
+
+Create a `.env` file in the project root to set environment variables:
+
+```dotenv
+SSE_IP=127.0.0.1
+SSE_PORT=9001
 ```
-cargo build --release
+
+---
+
+## Usage
+
+1. **Run the Application**
+
+   ```bash
+   cargo run --release
+   ```
+
+   The application will start tracking parachains and serve the SSE endpoint at the configured IP and port.
+
+2. **Monitor the Logs**
+
+   The application uses `env_logger` for logging. You can set the log level via the `RUST_LOG` environment variable:
+
+   ```bash
+   RUST_LOG=info cargo run --release
+   ```
+
+---
+
+## Client Integration
+
+Clients can connect to the SSE endpoint to receive real-time updates on parachain weight consumption.
+
+### SSE Endpoint
+
+- **URL**: `http://{SSE_IP}:{SSE_PORT}/events`
+
+### Data Format
+
+Each event sent to the client has the following properties:
+
+- **Event ID**: A unique identifier in the format `{para_id}-{block_number}`.
+- **Event Type**: `"consumptionUpdate"`.
+- **Data**: JSON-formatted string containing the `ConsumptionUpdate` structure.
+
+#### `ConsumptionUpdate` Structure
+
+```json
+{
+  "para_id": 1000,
+  "relay": "Polkadot",
+  "block_number": 123456,
+  "extrinsics_num": 5,
+  "ref_time": {
+    "normal": 0.5,
+    "operational": 0.3,
+    "mandatory": 0.2
+  },
+  "proof_size": {
+    "normal": 0.4,
+    "operational": 0.35,
+    "mandatory": 0.25
+  },
+  "total_proof_size": 0.9
+}
 ```
 
-This will output binaries: `tracker` and `server`
+### Example Client Code
 
-The `tracker` binary is responsible for tracking the actual consumption data of parachains. This program will read the parachains.json file to obtain the list of parachains for which it will track consumption data by listening to the latest blocks from the specified RPC nodes.
+#### JavaScript (Browser)
 
-The `server` binary provides a web interface that can be used for registering a parachain for consumption tracking, as well as for querying all the consumption data.
+```javascript
+const eventSource = new EventSource('http://localhost:9001/events');
 
-### Watchdog 🐕
+eventSource.addEventListener('consumptionUpdate', (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Received data:', data);
+});
 
-WebSocket connections can be closed due to underlying networking issues. In such cases, the tracking of parachain data would stop. For this reason, a script called 'watchdog' is introduced to ensure the tracker attempts to create a new connection whenever the current one is broken.
-
-```sh
-./scripts/watchdog.sh
+eventSource.onerror = (error) => {
+  console.error('SSE error:', error);
+};
 ```
 
-## Web API
+#### React Hook Example
 
-#### Registering a parachain
+```javascript
+import { useState, useEffect } from 'react';
 
-A basic example of registering a parachain:
+export const useWeightConsumption = (url) => {
+  const [data, setData] = useState({});
 
+  useEffect(() => {
+    const eventSource = new EventSource(url);
+
+    eventSource.addEventListener('consumptionUpdate', (event) => {
+      const parsedData = JSON.parse(event.data);
+      setData((prevData) => ({
+        ...prevData,
+        [parsedData.para_id]: parsedData,
+      }));
+    });
+
+    eventSource.onerror = (error) => {
+      console.error('SSE error:', error);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [url]);
+
+  return data;
+};
 ```
-curl -X POST http://127.0.0.1:8000/register_para -H "Content-Type: application/json" -d '{
-    "para": ["Polkadot", 2000]                                                 
-}'
-```
 
-#### Querying consumption data
+---
 
-A basic example of querying the consumption of a parachain with the paraID 2000 that is part of the Polkadot network:
+## API Reference
 
-```
-curl http://127.0.0.1:8000/consumption/polkadot/2000
-```
+### SSE Events
 
-## Local development
+- **Endpoint**: `/events`
+- **Method**: `GET`
+- **Headers**:
+  - `Content-Type`: `text/event-stream`
+  - `Cache-Control`: `no-cache`
+  - `Connection`: `keep-alive`
 
-For local development, you can run the entire suite of tests using the command below. It's important to run tests sequentially as some of them depend on shared mock state. This approach ensures that each test runs in isolation without interference from others.
-```
-cargo test -- --test-threads=1
-```
+### Event Fields
+
+- **`id`**: Unique event identifier.
+- **`event`**: Event type (`"consumptionUpdate"`).
+- **`data`**: JSON string of `ConsumptionUpdate`.
+
+---
+
+## Contributing
+
+Contributions are welcome!
+
+---
+
+## Contact
+
+For any questions or support, please open an issue.
