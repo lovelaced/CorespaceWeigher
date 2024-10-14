@@ -1,43 +1,67 @@
-name: Update chains registry and RPCs
+name: Update Registry
 
 on:
-  cron:
-    branches:
-      - master
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-jobs:  
-  pre-deploy:
+jobs:
+  update-registry:
     runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '21'
-
-      - name: Fetch Kusama and Polkadot TS files
-        run: |
-          curl -o scripts/productionRelayKusama.ts https://raw.githubusercontent.com/polkadot-js/apps/master/packages/apps-config/src/endpoints/productionRelayKusama.ts
-          curl -o scripts/productionRelayPolkadot.ts https://raw.githubusercontent.com/polkadot-js/apps/master/packages/apps-config/src/endpoints/productionRelayPolkadot.ts
+          cache: 'npm'
 
       - name: Install dependencies
+        working-directory: registry-ci
         run: npm install
 
-      - name: Generate registry.json
-        run: node scripts/generate-registry.js
+      - name: Run the registry update script
+        working-directory: registry-ci
+        run: node generate-registry.js
+
+      - name: Check for changes
+        id: git_status
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and push changes
+        if: steps.git_status.outputs.changes_detected == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Action"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH_NAME="update-registry-$(date +%Y%m%d%H%M%S)"
+          git checkout -b $BRANCH_NAME
           git add registry.json
           git commit -m "Update registry.json"
-          git push
+          git push -u origin $BRANCH_NAME
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.git_status.outputs.changes_detected == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.PR_SECRET }}
+          branch: ${{ steps.commit_and_push.outputs.branch_name }}
+          title: "Automated registry update"
+          body: |
+            This PR was created automatically by the weekly registry update workflow.
+
+            Changes:
+            - Updated `registry.json` with the latest network configurations.
 

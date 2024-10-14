@@ -37,8 +37,10 @@ const networkData = [];
     }
   }
 
+  const outputPath = path.resolve(__dirname, '..', 'registry.json');
+
   // Write the extracted data to a JSON file
-  fs.writeFileSync('../registry.json', JSON.stringify(networkData, null, 2), 'utf8');
+  fs.writeFileSync(outputPath, JSON.stringify(networkData, null, 2), 'utf8');
 
   // Output a success message
   console.log('Network data has been extracted to registry.json');
