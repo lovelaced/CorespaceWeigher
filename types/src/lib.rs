@@ -84,8 +84,6 @@ pub struct Parachain {
 pub struct WeightConsumption {
 	/// The block number for which the weight consumption is related to.
 	pub block_number: u32,
-	/// The timestamp of the block.
-	pub timestamp: Timestamp,
 	/// The ref_time consumption over all the dispatch classes.
 	pub ref_time: DispatchClassConsumption,
 	/// The proof size over all dispatch classes.
@@ -136,8 +134,6 @@ impl WeightConsumption {
 		vec![
 			// Block number:
 			self.block_number.to_string(),
-			// Timestamp:
-			self.timestamp.to_string(),
 			// Reftime consumption:
 			self.ref_time.normal.to_string(),
 			self.ref_time.operational.to_string(),

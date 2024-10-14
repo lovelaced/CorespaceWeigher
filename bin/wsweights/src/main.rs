@@ -9,8 +9,8 @@ use tokio::sync::{mpsc, RwLock};
 use tokio::task::JoinSet;
 use tokio::time::{timeout, Duration};
 use warp::sse::Event;
-use warp::{Filter, http::Method};
-use types::{Timestamp, Parachain, WeightConsumption, RelayChain};
+use warp::{http::Method, Filter};
+use types::{Parachain, RelayChain, WeightConsumption};
 
 const LOG_TARGET: &str = "tracker";
 
@@ -21,6 +21,7 @@ struct ConsumptionUpdate {
     relay: RelayChain,
     block_number: u32,
     extrinsics_num: usize,
+    authorities_num: usize, // New field
     ref_time: RefTime,
     proof_size: ProofSize,
     total_proof_size: f32,
@@ -39,6 +40,7 @@ struct ProofSize {
     operational: f32,
     mandatory: f32,
 }
+
 
 #[subxt::subxt(runtime_metadata_path = "../../artifacts/metadata.scale")]
 mod polkadot {}
@@ -87,7 +89,6 @@ async fn start_sse_server(
     // Combine IP and port into the full address
     let addr_str = format!("{}:{}", ip, port);
     let addr: std::net::SocketAddr = addr_str.parse()?;
-
 
     let clients_filter = warp::any().map(move || clients.clone());
     let cache_filter = warp::any().map(move || cache.clone());
@@ -258,14 +259,18 @@ async fn note_new_block(
     let block_number = block.header().number;
     let extrinsics = block.extrinsics().await?;
     let extrinsics_num = extrinsics.len();
-    let timestamp = timestamp_at(api.clone(), block.hash()).await?;
-    let consumption = weight_consumption(api, block_number, timestamp).await?;
+
+    // Fetch the number of authorities at the block's hash
+    let authorities_num = authorities_num(&api, block.hash()).await?;
+
+    let consumption = weight_consumption(api, block_number).await?;
 
     let consumption_update = ConsumptionUpdate {
         para_id: para.para_id,
         relay: para.relay_chain,
         block_number,
         extrinsics_num,
+        authorities_num, // Include the number of authorities
         ref_time: RefTime {
             normal: consumption.ref_time.normal,
             operational: consumption.ref_time.operational,
@@ -352,7 +357,6 @@ async fn remove_disconnected_clients(clients: Clients, disconnected_clients: Vec
 async fn weight_consumption(
     api: OnlineClient<PolkadotConfig>,
     block_number: u32,
-    timestamp: Timestamp,
 ) -> Result<WeightConsumption, Box<dyn std::error::Error>> {
     let weight_query = polkadot::storage().system().block_weight();
     let weight_consumed = api
@@ -380,41 +384,56 @@ async fn weight_consumption(
     // Calculate the total proof size
     let total_proof_size = normal_proof_size + operational_proof_size + mandatory_proof_size;
 
-let consumption = WeightConsumption {
-    block_number,
-    timestamp,
-    ref_time: (
-        normal_ref_time as f32 / ref_time_limit as f32,
-        operational_ref_time as f32 / ref_time_limit as f32,
-        mandatory_ref_time as f32 / ref_time_limit as f32,
-    )
-    .into(),
-    proof_size: (
-        normal_proof_size as f32 / proof_limit as f32,
-        operational_proof_size as f32 / proof_limit as f32,
-        mandatory_proof_size as f32 / proof_limit as f32,
-    )
-    .into(),
-    total_proof_size: total_proof_size as f32 / proof_limit as f32,
-};
+    let consumption = WeightConsumption {
+        block_number,
+        ref_time: (
+            normal_ref_time as f32 / ref_time_limit as f32,
+            operational_ref_time as f32 / ref_time_limit as f32,
+            mandatory_ref_time as f32 / ref_time_limit as f32,
+        )
+        .into(),
+        proof_size: (
+            normal_proof_size as f32 / proof_limit as f32,
+            operational_proof_size as f32 / proof_limit as f32,
+            mandatory_proof_size as f32 / proof_limit as f32,
+        )
+        .into(),
+        total_proof_size: total_proof_size as f32 / proof_limit as f32,
+    };
 
     Ok(consumption)
 }
-
-// Fetch the timestamp for the given block
-async fn timestamp_at(
-    api: OnlineClient<PolkadotConfig>,
+async fn authorities_num(
+    api: &OnlineClient<PolkadotConfig>,
     block_hash: subxt::utils::H256,
-) -> Result<Timestamp, Box<dyn std::error::Error>> {
-    let timestamp_query = polkadot::storage().timestamp().now();
+) -> Result<usize, Box<dyn std::error::Error>> {
+    // Build the storage query for session.validators
+    let storage_query = polkadot::storage().session().validators();
 
-    let timestamp = api
+    // Attempt to fetch the list of validators at the given block hash
+    let result = api
         .storage()
         .at(block_hash)
-        .fetch(&timestamp_query)
-        .await?
-        .ok_or("Failed to query timestamp")?;
+        .fetch(&storage_query)
+        .await;
 
-    Ok(timestamp)
+    match result {
+        Ok(Some(validators)) => {
+            // Return the number of validators
+            Ok(validators.len())
+        }
+        Ok(None) => {
+            // Storage item exists but no validators found
+            Ok(0)
+        }
+        Err(e) => {
+            // Log a warning and return 0
+            log::debug!(
+                "Failed to fetch session.validators: {:?}. Assuming 0 authorities.",
+                e
+            );
+            Ok(0)
+        }
+    }
 }
 
