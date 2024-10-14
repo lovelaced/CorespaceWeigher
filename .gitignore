@@ -1,3 +1,5 @@
 /target
 /out
 logs/
+node_modules/
+registry-ci/node_modules/

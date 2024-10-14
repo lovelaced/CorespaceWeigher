@@ -33,10 +33,10 @@ jobs:
         id: git_status
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-          else
+          if git diff --quiet HEAD -- registry.json; then
             echo "changes_detected=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Commit and push changes
