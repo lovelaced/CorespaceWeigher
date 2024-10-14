@@ -41,6 +41,8 @@ jobs:
 
       - name: Commit and push changes
         if: steps.git_status.outputs.changes_detected == 'true'
+        id: commit_and_push
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
@@ -55,7 +57,7 @@ jobs:
 
       - name: Create Pull Request
         if: steps.git_status.outputs.changes_detected == 'true'
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.PR_SECRET }}
           branch: ${{ steps.commit_and_push.outputs.branch_name }}
