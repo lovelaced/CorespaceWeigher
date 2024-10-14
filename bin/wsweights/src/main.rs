@@ -424,7 +424,7 @@ async fn authorities_num(
         }
         Ok(None) => {
             // Storage item exists but no validators found
-            Ok(0)
+            Ok(404404)
         }
         Err(e) => {
             // Log a warning and return 0
@@ -432,7 +432,7 @@ async fn authorities_num(
                 "Failed to fetch session.validators: {:?}. Assuming 0 authorities.",
                 e
             );
-            Ok(0)
+            Ok(404404)
         }
     }
 }
