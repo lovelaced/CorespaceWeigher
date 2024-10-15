@@ -83,8 +83,8 @@ async fn start_sse_server(
     dotenv::dotenv().ok(); // Load environment variables from `.env` file (optional)
 
     // Read the IP address and port from environment variables, or default to "127.0.0.1:9001"
-    let ip = env::var("WEBSOCKET_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
-    let port = env::var("WEBSOCKET_PORT").unwrap_or_else(|_| "9001".to_string());
+    let ip = env::var("SSE_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = env::var("SSE_PORT").unwrap_or_else(|_| "9001".to_string());
 
     // Combine IP and port into the full address
     let addr_str = format!("{}:{}", ip, port);
