@@ -4,13 +4,13 @@ use std::collections::HashMap;
 use std::convert::Infallible;
 use std::env;
 use std::sync::Arc;
-use subxt::{blocks::Block, OnlineClient, PolkadotConfig};
+use subxt::{blocks::Block, OnlineClient, PolkadotConfig, utils::H256};
 use tokio::sync::{mpsc, RwLock};
 use tokio::task::JoinSet;
 use tokio::time::{timeout, Duration};
 use warp::sse::Event;
 use warp::{http::Method, Filter};
-use types::{Parachain, RelayChain, WeightConsumption};
+use types::{Parachain, RelayChain, WeightConsumption, Timestamp};
 
 const LOG_TARGET: &str = "tracker";
 
@@ -21,7 +21,8 @@ struct ConsumptionUpdate {
     relay: RelayChain,
     block_number: u32,
     extrinsics_num: usize,
-    authorities_num: usize, // New field
+    authorities_num: usize,
+    timestamp: Timestamp,
     ref_time: RefTime,
     proof_size: ProofSize,
     total_proof_size: f32,
@@ -260,9 +261,8 @@ async fn note_new_block(
     let extrinsics = block.extrinsics().await?;
     let extrinsics_num = extrinsics.len();
 
-    // Fetch the number of authorities at the block's hash
     let authorities_num = authorities_num(&api, block.hash()).await?;
-
+    let timestamp = timestamp_at(api.clone(), block.hash()).await?;
     let consumption = weight_consumption(api, block_number).await?;
 
     let consumption_update = ConsumptionUpdate {
@@ -270,7 +270,8 @@ async fn note_new_block(
         relay: para.relay_chain,
         block_number,
         extrinsics_num,
-        authorities_num, // Include the number of authorities
+        authorities_num,
+        timestamp,
         ref_time: RefTime {
             normal: consumption.ref_time.normal,
             operational: consumption.ref_time.operational,
@@ -436,4 +437,18 @@ async fn authorities_num(
         }
     }
 }
+async fn timestamp_at(
+	api: OnlineClient<PolkadotConfig>,
+	block_hash: H256,
+) -> Result<Timestamp, Box<dyn std::error::Error>> {
+	let timestamp_query = polkadot::storage().timestamp().now();
 
+	let timestamp = api
+		.storage()
+		.at(block_hash)
+		.fetch(&timestamp_query)
+		.await?
+		.ok_or("Failed to query timestamp")?;
+
+	Ok(timestamp)
+}
