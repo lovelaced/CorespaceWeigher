@@ -44,6 +44,7 @@
     "para_id": 2090,
     "relay_chain": "Kusama",
     "rpcs": [
+      "wss://rpc.basilisk.cloud",
       "wss://basilisk-rpc.dwellir.com"
     ],
     "expiry_timestamp": 1731252629
@@ -220,8 +221,7 @@
     "rpcs": [
       "wss://krest-rpc.dwellir.com",
       "wss://wss-krest.peaq.network/",
-      "wss://krest.api.onfinality.io/public-ws",
-      "wss://krest.unitedbloc.com/"
+      "wss://krest.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -491,8 +491,7 @@
       "wss://rpc-para.ajuna.network",
       "wss://ajuna.ibp.network",
       "wss://ajuna.dotters.network",
-      "wss://ajuna.api.onfinality.io/public-ws",
-      "wss://ajuna.public.curie.radiumblock.co/ws"
+      "wss://ajuna.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
   },
