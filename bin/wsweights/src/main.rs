@@ -47,7 +47,7 @@ mod polkadot {}
 
 type Clients = Arc<RwLock<Vec<mpsc::UnboundedSender<Result<Event, Infallible>>>>>;
 type Cache = Arc<RwLock<HashMap<u32, ConsumptionUpdate>>>;
-type TimestampCache = Arc<RwLock<HashMap<u32, Timestamp>>>;
+type TimestampCache = Arc<RwLock<HashMap<u32, (u32, Timestamp, Option<f64>)>>>;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -72,10 +72,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn start_sse_server(
-    clients: Clients,
-    cache: Cache,
-) -> Result<(), Box<dyn std::error::Error>> {
+async fn start_sse_server(clients: Clients, cache: Cache) -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
 
     let ip = env::var("SSE_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
@@ -200,13 +197,13 @@ async fn track_blocks(
     cache: Cache,
     timestamp_cache: TimestampCache,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    log::info!("{}-{} - Subscribing to finalized blocks", para.relay_chain, para.para_id);
+    log::info!("{}-{} - Subscribing to best blocks", para.relay_chain, para.para_id);
 
     let mut blocks_sub = api
         .blocks()
-        .subscribe_finalized()
+        .subscribe_best()
         .await
-        .map_err(|_| "Failed to subscribe to finalized blocks")?;
+        .map_err(|_| "Failed to subscribe to best blocks")?;
 
     while let Some(Ok(block)) = blocks_sub.next().await {
         note_new_block(api.clone(), para.clone(), block, clients.clone(), cache.clone(), timestamp_cache.clone()).await?;
@@ -230,19 +227,31 @@ async fn note_new_block(
     let consumption = weight_consumption(api, block_number).await?;
     let relay_chain = para.relay_chain.clone();
 
-    let block_time_seconds = {
-        let mut cache = timestamp_cache.write().await;
-        if let Some(previous_timestamp) = cache.insert(para.para_id, timestamp) {
-            let difference = (timestamp - previous_timestamp) as f64 / 1000.0;
-            Some(difference)
-        } else {
-            None
-        }
+    // Retrieve the previous block data if available
+    let (last_block_number, last_timestamp, last_valid_time) = {
+        let cache = timestamp_cache.read().await;
+        cache.get(&para.para_id)
+             .map(|(last_block_number, last_timestamp, last_valid_time)| (*last_block_number, *last_timestamp, *last_valid_time))
+             .unwrap_or((0, 0, None)) // Defaults if no previous entry exists
     };
+
+    // Calculate block time in seconds if blocks are sequential; otherwise, use last valid time
+    let block_time_seconds = if last_block_number + 1 == block_number {
+        let difference = (timestamp - last_timestamp) as f64 / 1000.0;
+        Some(difference)
+    } else {
+        last_valid_time
+    };
+
+    // Update the timestamp cache with the latest block data
+    {
+        let mut cache = timestamp_cache.write().await;
+        cache.insert(para.para_id, (block_number, timestamp, block_time_seconds));
+    }
 
     let consumption_update = ConsumptionUpdate {
         para_id: para.para_id,
-        relay: para.relay_chain,
+        relay: relay_chain.clone(),
         block_number,
         extrinsics_num,
         authorities_num,
@@ -254,9 +263,9 @@ async fn note_new_block(
             mandatory: consumption.ref_time.mandatory,
         },
         proof_size: ProofSize {
-            normal: consumption.ref_time.normal,
-            operational: consumption.ref_time.operational,
-            mandatory: consumption.ref_time.mandatory,
+            normal: consumption.proof_size.normal,
+            operational: consumption.proof_size.operational,
+            mandatory: consumption.proof_size.mandatory,
         },
         total_proof_size: consumption.total_proof_size,
     };
@@ -340,19 +349,19 @@ async fn authorities_num(
 }
 
 async fn timestamp_at(
-	api: OnlineClient<PolkadotConfig>,
-	block_hash: H256,
+    api: OnlineClient<PolkadotConfig>,
+    block_hash: H256,
 ) -> Result<Timestamp, Box<dyn std::error::Error>> {
-	let timestamp_query = polkadot::storage().timestamp().now();
+    let timestamp_query = polkadot::storage().timestamp().now();
 
-	let timestamp = api
-		.storage()
-		.at(block_hash)
-		.fetch(&timestamp_query)
-		.await?
-		.ok_or("Failed to query timestamp")?;
+    let timestamp = api
+        .storage()
+        .at(block_hash)
+        .fetch(&timestamp_query)
+        .await?
+        .ok_or("Failed to query timestamp")?;
 
-	Ok(timestamp)
+    Ok(timestamp)
 }
 
 async fn weight_consumption(
