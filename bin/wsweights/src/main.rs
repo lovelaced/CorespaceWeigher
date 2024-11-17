@@ -166,27 +166,54 @@ async fn track_weight_consumption(
         return;
     };
 
-    log::info!("{}-{} - Starting to track consumption.", para.relay_chain, para.para_id);
-    let result = OnlineClient::<PolkadotConfig>::from_url(rpc).await;
+    let mut retry_delay = Duration::from_secs(1);
+    let max_retry_delay = Duration::from_secs(60);
 
-    if let Ok(api) = result {
-        if let Err(err) = track_blocks(api, para.clone(), clients, cache, timestamp_cache).await {
-            log::error!(
-                target: LOG_TARGET,
-                "{}-{} - Failed to track new block: {:?}",
-                para.relay_chain,
-                para.para_id,
-                err
-            );
-        }
-    } else {
-        log::error!(
-            target: LOG_TARGET,
-            "{}-{} - Failed to create online client: {:?}",
+    loop {
+        log::info!(
+            "{}-{} - Attempting to connect to RPC at {}",
             para.relay_chain,
             para.para_id,
-            result
+            rpc
         );
+
+        match OnlineClient::<PolkadotConfig>::from_url(rpc).await {
+            Ok(api) => {
+                // Reset retry delay upon successful connection
+                retry_delay = Duration::from_secs(1);
+
+                if let Err(err) = track_blocks(api, para.clone(), clients.clone(), cache.clone(), timestamp_cache.clone()).await {
+                    log::error!(
+                        target: LOG_TARGET,
+                        "{}-{} - Error in track_blocks: {:?}",
+                        para.relay_chain,
+                        para.para_id,
+                        err
+                    );
+                }
+            }
+            Err(err) => {
+                log::error!(
+                    target: LOG_TARGET,
+                    "{}-{} - Failed to create online client: {:?}",
+                    para.relay_chain,
+                    para.para_id,
+                    err
+                );
+            }
+        }
+
+        // Wait before retrying to avoid tight loop
+        log::info!(
+            "{}-{} - Waiting {:?} before retrying connection",
+            para.relay_chain,
+            para.para_id,
+            retry_delay
+        );
+        tokio::time::sleep(retry_delay).await;
+
+        // Increase the delay for the next retry, up to the maximum
+        retry_delay = std::cmp::min(retry_delay * 2, max_retry_delay);
     }
 }
 
@@ -197,19 +224,64 @@ async fn track_blocks(
     cache: Cache,
     timestamp_cache: TimestampCache,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    log::info!("{}-{} - Subscribing to best blocks", para.relay_chain, para.para_id);
+    let mut retry_delay = Duration::from_secs(1);
+    let max_retry_delay = Duration::from_secs(60);
 
-    let mut blocks_sub = api
-        .blocks()
-        .subscribe_best()
-        .await
-        .map_err(|_| "Failed to subscribe to best blocks")?;
+    loop {
+        log::info!("{}-{} - Subscribing to best blocks", para.relay_chain, para.para_id);
 
-    while let Some(Ok(block)) = blocks_sub.next().await {
-        note_new_block(api.clone(), para.clone(), block, clients.clone(), cache.clone(), timestamp_cache.clone()).await?;
+        match api.blocks().subscribe_best().await {
+            Ok(mut blocks_sub) => {
+                // Reset retry delay upon successful subscription
+                retry_delay = Duration::from_secs(1);
+
+                while let Some(block_result) = blocks_sub.next().await {
+                    match block_result {
+                        Ok(block) => {
+                            if let Err(err) = note_new_block(api.clone(), para.clone(), block, clients.clone(), cache.clone(), timestamp_cache.clone()).await {
+                                log::error!(
+                                    "{}-{} - Error processing new block: {:?}",
+                                    para.relay_chain,
+                                    para.para_id,
+                                    err
+                                );
+                            }
+                        }
+                        Err(err) => {
+                            log::error!(
+                                "{}-{} - Error receiving block: {:?}",
+                                para.relay_chain,
+                                para.para_id,
+                                err
+                            );
+                            // Break to resubscribe
+                            break;
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                log::error!(
+                    "{}-{} - Failed to subscribe to best blocks: {:?}",
+                    para.relay_chain,
+                    para.para_id,
+                    err
+                );
+            }
+        }
+
+        // Wait before retrying to avoid tight loop
+        log::info!(
+            "{}-{} - Waiting {:?} before retrying subscription",
+            para.relay_chain,
+            para.para_id,
+            retry_delay
+        );
+        tokio::time::sleep(retry_delay).await;
+
+        // Increase the delay for the next retry, up to the maximum
+        retry_delay = std::cmp::min(retry_delay * 2, max_retry_delay);
     }
-
-    Ok(())
 }
 
 async fn note_new_block(
