@@ -338,7 +338,10 @@ async fn note_new_block(
     timestamp_cache: TimestampCache,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let block_number = block.header().number;
-    let extrinsics_num = block.extrinsics().await?.len();
+    let extrinsics_num = block.extrinsics().await?.iter().map(|r| r.map(|tx| match tx.pallet_index() {
+        40 => 100, // assume batch_size is 100, pallet_utility has index 40
+        _ => 1,
+    }).unwrap_or(0)).sum();
     let authorities_num = authorities_num(&api, block.hash()).await?;
     let timestamp = timestamp_at(api.clone(), block.hash()).await?;
     let consumption = weight_consumption(api, block_number).await?;
@@ -529,4 +532,3 @@ async fn weight_consumption(
 
     Ok(consumption)
 }
-
