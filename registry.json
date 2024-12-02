@@ -33,7 +33,7 @@
     "para_id": 2119,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://rpc-parachain.bajun.network",
+      "wss://rpc-para.bajun.network",
       "wss://bajun.api.onfinality.io/public-ws",
       "wss://bajun.public.curie.radiumblock.co/ws"
     ],
@@ -44,6 +44,7 @@
     "para_id": 2090,
     "relay_chain": "Kusama",
     "rpcs": [
+      "wss://rpc.basilisk.cloud",
       "wss://basilisk-rpc.dwellir.com"
     ],
     "expiry_timestamp": 1731252629
@@ -55,7 +56,8 @@
     "rpcs": [
       "wss://bifrost-rpc.dwellir.com",
       "wss://bifrost-rpc.liebi.com/ws",
-      "wss://us.bifrost-rpc.liebi.com/ws"
+      "wss://us.bifrost-rpc.liebi.com/ws",
+      "wss://bifrost.public.curie.radiumblock.co/ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -220,8 +222,7 @@
     "rpcs": [
       "wss://krest-rpc.dwellir.com",
       "wss://wss-krest.peaq.network/",
-      "wss://krest.api.onfinality.io/public-ws",
-      "wss://krest.unitedbloc.com/"
+      "wss://krest.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -295,8 +296,7 @@
     "para_id": 2048,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://kusama.rpc.robonomics.network/",
-      "wss://robonomics.0xsamsara.com"
+      "wss://kusama.rpc.robonomics.network/"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -305,8 +305,7 @@
     "para_id": 2240,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://kusama.rpc.robonomics.network/",
-      "wss://robonomics.0xsamsara.com"
+      "wss://kusama.rpc.robonomics.network/"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -356,8 +355,7 @@
     "para_id": 2114,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://turing-rpc.dwellir.com",
-      "wss://rpc.turing.oak.tech"
+      "wss://turing-rpc.dwellir.com"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -367,15 +365,6 @@
     "relay_chain": "Kusama",
     "rpcs": [
       "wss://rpcnodea01.xode.net/n7yoxCmcIrCF6VziCcDmYTwL8R03a/rpc"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
-    "name": "ZERO Canary",
-    "para_id": 2236,
-    "relay_chain": "Kusama",
-    "rpcs": [
-      "wss://rpc-1.gamedao.net"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -465,7 +454,6 @@
       "wss://kusama.public.curie.radiumblock.co/ws",
       "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
       "wss://ksm-rpc.stakeworld.io",
-      "wss://kusama.rpc.subquery.network/public/ws",
       "light://substrate-connect/kusama"
     ],
     "expiry_timestamp": 1731252629
@@ -479,6 +467,7 @@
       "wss://acala-rpc-1.aca-api.network",
       "wss://acala-rpc-3.aca-api.network/ws",
       "wss://acala-rpc.dwellir.com",
+      "wss://acala.dotters.network",
       "wss://acala-polkadot.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
@@ -491,8 +480,7 @@
       "wss://rpc-para.ajuna.network",
       "wss://ajuna.ibp.network",
       "wss://ajuna.dotters.network",
-      "wss://ajuna.api.onfinality.io/public-ws",
-      "wss://ajuna.public.curie.radiumblock.co/ws"
+      "wss://ajuna.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -529,8 +517,7 @@
       "wss://bifrost-polkadot.ibp.network",
       "wss://bifrost-polkadot.dotters.network",
       "wss://hk.p.bifrost-rpc.liebi.com/ws",
-      "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
-      "wss://bifrost.public.curie.radiumblock.co/ws"
+      "wss://eu.bifrost-polkadot-rpc.liebi.com/ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -593,7 +580,8 @@
     "rpcs": [
       "wss://rpc.darwinia.network",
       "wss://darwinia-rpc.dcdao.box",
-      "wss://darwinia-rpc.dwellir.com"
+      "wss://darwinia-rpc.dwellir.com",
+      "wss://darwinia.rpc.subquery.network/public/ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -686,7 +674,8 @@
     "para_id": 3340,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://invarch-rpc.dwellir.com"
+      "wss://invarch-rpc.dwellir.com",
+      "wss://invarch.dotters.network"
     ],
     "expiry_timestamp": 1731252629
   },
