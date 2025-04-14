@@ -33,9 +33,7 @@
     "para_id": 2119,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://rpc-parachain.bajun.network",
-      "wss://bajun.api.onfinality.io/public-ws",
-      "wss://bajun.public.curie.radiumblock.co/ws"
+      "wss://rpc-para.bajun.network"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -44,7 +42,8 @@
     "para_id": 2090,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://basilisk-rpc.dwellir.com"
+      "wss://rpc.basilisk.cloud",
+      "wss://basilisk-rpc.n.dwellir.com"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -53,18 +52,9 @@
     "para_id": 2001,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://bifrost-rpc.dwellir.com",
       "wss://bifrost-rpc.liebi.com/ws",
-      "wss://us.bifrost-rpc.liebi.com/ws"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
-    "name": "Calamari",
-    "para_id": 2084,
-    "relay_chain": "Kusama",
-    "rpcs": [
-      "wss://calamari.systems"
+      "wss://us.bifrost-rpc.liebi.com/ws",
+      "wss://bifrost.public.curie.radiumblock.co/ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -74,7 +64,6 @@
     "relay_chain": "Kusama",
     "rpcs": [
       "wss://crab-rpc.darwinia.network/",
-      "wss://crab-rpc.dcdao.box",
       "wss://darwiniacrab-rpc.dwellir.com"
     ],
     "expiry_timestamp": 1731252629
@@ -119,15 +108,6 @@
     "expiry_timestamp": 1731252629
   },
   {
-    "name": "Imbue Network",
-    "para_id": 2121,
-    "relay_chain": "Kusama",
-    "rpcs": [
-      "wss://kusama.imbuenetwork.com"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
     "name": "Integritee Network",
     "para_id": 2015,
     "relay_chain": "Kusama",
@@ -142,7 +122,6 @@
     "para_id": 2125,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://tinkernet-rpc.dwellir.com",
       "light://substrate-connect/kusama/tinkernet"
     ],
     "expiry_timestamp": 1731252629
@@ -167,19 +146,6 @@
       "wss://karura-rpc-3.aca-api.network/ws",
       "wss://karura-rpc.dwellir.com",
       "wss://karura.api.onfinality.io/public-ws"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
-    "name": "Khala Network",
-    "para_id": 2004,
-    "relay_chain": "Kusama",
-    "rpcs": [
-      "wss://khala-rpc.dwellir.com",
-      "wss://rpc.helikon.io/khala",
-      "wss://khala.api.onfinality.io/public-ws",
-      "wss://khala-api.phala.network/ws",
-      "wss://khala.public.curie.radiumblock.co/ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -220,8 +186,7 @@
     "rpcs": [
       "wss://krest-rpc.dwellir.com",
       "wss://wss-krest.peaq.network/",
-      "wss://krest.api.onfinality.io/public-ws",
-      "wss://krest.unitedbloc.com/"
+      "wss://krest.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -241,7 +206,7 @@
     "relay_chain": "Kusama",
     "rpcs": [
       "wss://moonriver.public.blastapi.io",
-      "wss://moonriver-rpc.dwellir.com",
+      "wss://moonriver-rpc.n.dwellir.com",
       "wss://wss.api.moonriver.moonbeam.network",
       "wss://moonriver.api.onfinality.io/public-ws",
       "wss://moonriver.public.curie.radiumblock.co/ws",
@@ -250,21 +215,11 @@
     "expiry_timestamp": 1731252629
   },
   {
-    "name": "Parallel Heiko",
-    "para_id": 2085,
-    "relay_chain": "Kusama",
-    "rpcs": [
-      "wss://heiko-rpc.parallel.fi"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
     "name": "Picasso",
     "para_id": 2087,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://rpc.composablenodes.tech",
-      "wss://picasso-rpc.dwellir.com"
+      "wss://rpc.composablenodes.tech"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -282,7 +237,7 @@
     "para_id": 2095,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://quartz-rpc.dwellir.com",
+      "wss://quartz-rpc.n.dwellir.com",
       "wss://ws-quartz.unique.network",
       "wss://us-ws-quartz.unique.network",
       "wss://asia-ws-quartz.unique.network",
@@ -295,8 +250,7 @@
     "para_id": 2048,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://kusama.rpc.robonomics.network/",
-      "wss://robonomics.0xsamsara.com"
+      "wss://kusama.rpc.robonomics.network/"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -305,8 +259,7 @@
     "para_id": 2240,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://kusama.rpc.robonomics.network/",
-      "wss://robonomics.0xsamsara.com"
+      "wss://kusama.rpc.robonomics.network/"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -356,8 +309,7 @@
     "para_id": 2114,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://turing-rpc.dwellir.com",
-      "wss://rpc.turing.oak.tech"
+      "wss://turing-rpc.dwellir.com"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -371,22 +323,13 @@
     "expiry_timestamp": 1731252629
   },
   {
-    "name": "ZERO Canary",
-    "para_id": 2236,
-    "relay_chain": "Kusama",
-    "rpcs": [
-      "wss://rpc-1.gamedao.net"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
     "name": "AssetHub",
     "para_id": 1000,
     "relay_chain": "Kusama",
     "rpcs": [
       "wss://asset-hub-kusama-rpc.dwellir.com",
       "wss://statemine-rpc-tn.dwellir.com",
-      "wss://sys.ibp.network/statemine",
+      "wss://sys.ibp.network/asset-hub-kusama",
       "wss://asset-hub-kusama.dotters.network",
       "wss://rpc-asset-hub-kusama.luckyfriday.io",
       "wss://kusama-asset-hub-rpc.polkadot.io",
@@ -433,7 +376,8 @@
       "wss://encointer-kusama-rpc.dwellir.com",
       "wss://kusama.api.encointer.org",
       "wss://sys.ibp.network/encointer-kusama",
-      "wss://encointer-kusama.dotters.network"
+      "wss://encointer-kusama.dotters.network",
+      "wss://rpc-encointer-kusama.luckyfriday.io"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -442,7 +386,7 @@
     "para_id": 1004,
     "relay_chain": "Kusama",
     "rpcs": [
-      "wss://people-kusama-rpc.dwellir.com",
+      "wss://people-kusama-rpc.n.dwellir.com",
       "wss://sys.ibp.network/people-kusama",
       "wss://people-kusama.dotters.network",
       "wss://rpc-people-kusama.luckyfriday.io",
@@ -458,6 +402,7 @@
     "rpcs": [
       "wss://kusama-rpc.dwellir.com",
       "wss://kusama-rpc-tn.dwellir.com",
+      "wss://rpc-kusama.helixstreet.io",
       "wss://rpc.ibp.network/kusama",
       "wss://kusama.dotters.network",
       "wss://rpc-kusama.luckyfriday.io",
@@ -465,7 +410,6 @@
       "wss://kusama.public.curie.radiumblock.co/ws",
       "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
       "wss://ksm-rpc.stakeworld.io",
-      "wss://kusama.rpc.subquery.network/public/ws",
       "light://substrate-connect/kusama"
     ],
     "expiry_timestamp": 1731252629
@@ -479,6 +423,8 @@
       "wss://acala-rpc-1.aca-api.network",
       "wss://acala-rpc-3.aca-api.network/ws",
       "wss://acala-rpc.dwellir.com",
+      "wss://acala.ibp.network",
+      "wss://acala.dotters.network",
       "wss://acala-polkadot.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
@@ -490,9 +436,7 @@
     "rpcs": [
       "wss://rpc-para.ajuna.network",
       "wss://ajuna.ibp.network",
-      "wss://ajuna.dotters.network",
-      "wss://ajuna.api.onfinality.io/public-ws",
-      "wss://ajuna.public.curie.radiumblock.co/ws"
+      "wss://ajuna.dotters.network"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -516,7 +460,7 @@
     "para_id": 2056,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://public-rpc.mainnet.aventus.network"
+      "wss://public-rpc.mainnet.aventus.io"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -525,12 +469,10 @@
     "para_id": 2030,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://bifrost-polkadot-rpc.dwellir.com",
       "wss://bifrost-polkadot.ibp.network",
       "wss://bifrost-polkadot.dotters.network",
       "wss://hk.p.bifrost-rpc.liebi.com/ws",
-      "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
-      "wss://bifrost.public.curie.radiumblock.co/ws"
+      "wss://eu.bifrost-polkadot-rpc.liebi.com/ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -592,8 +534,8 @@
     "relay_chain": "Polkadot",
     "rpcs": [
       "wss://rpc.darwinia.network",
-      "wss://darwinia-rpc.dcdao.box",
-      "wss://darwinia-rpc.dwellir.com"
+      "wss://darwinia-rpc.dwellir.com",
+      "wss://darwinia.rpc.subquery.network/public/ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -628,11 +570,12 @@
     "expiry_timestamp": 1731252629
   },
   {
-    "name": "Hashed Network",
-    "para_id": 2093,
+    "name": "Heima",
+    "para_id": 2013,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://c1.hashed.network"
+      "wss://heima-rpc.n.dwellir.com",
+      "wss://rpc.heima-parachain.heima.network"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -641,10 +584,10 @@
     "para_id": 2034,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://hydradx-rpc.dwellir.com",
+      "wss://hydration-rpc.n.dwellir.com",
       "wss://rpc.hydradx.cloud",
       "wss://rpc.helikon.io/hydradx",
-      "wss://hydradx.paras.ibp.network",
+      "wss://hydration.ibp.network",
       "wss://hydration.dotters.network"
     ],
     "expiry_timestamp": 1731252629
@@ -686,7 +629,18 @@
     "para_id": 3340,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://invarch-rpc.dwellir.com"
+      "wss://invarch-rpc.dwellir.com",
+      "wss://invarch.ibp.network",
+      "wss://invarch.dotters.network"
+    ],
+    "expiry_timestamp": 1731252629
+  },
+  {
+    "name": "JAMTON",
+    "para_id": 3397,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://rpc.jamton.network"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -695,10 +649,10 @@
     "para_id": 2086,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://spiritnet.kilt.io/",
       "wss://kilt-rpc.dwellir.com",
       "wss://kilt.ibp.network",
-      "wss://kilt.dotters.network"
+      "wss://kilt.dotters.network",
+      "wss://spiritnet.kilt.io/"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -707,18 +661,9 @@
     "para_id": 3370,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://laos-rpc.dwellir.com",
-      "wss://rpc.laos.laosfoundation.io"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
-    "name": "Litentry",
-    "para_id": 2013,
-    "relay_chain": "Polkadot",
-    "rpcs": [
-      "wss://litentry-rpc.dwellir.com",
-      "wss://rpc.litentry-parachain.litentry.io"
+      "wss://laos-rpc.n.dwellir.com",
+      "wss://rpc.laos.laosfoundation.io",
+      "light://substrate-connect/polkadot/laos"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -746,7 +691,7 @@
     "relay_chain": "Polkadot",
     "rpcs": [
       "wss://moonbeam.public.blastapi.io",
-      "wss://moonbeam-rpc.dwellir.com",
+      "wss://moonbeam-rpc.n.dwellir.com",
       "wss://moonbeam.ibp.network",
       "wss://moonbeam.dotters.network",
       "wss://wss.api.moonbeam.network",
@@ -761,6 +706,9 @@
     "para_id": 3369,
     "relay_chain": "Polkadot",
     "rpcs": [
+      "wss://rpc.helikon.io/mythos",
+      "wss://mythos.ibp.network",
+      "wss://mythos.dotters.network",
       "wss://polkadot-mythos-rpc.polkadot.io"
     ],
     "expiry_timestamp": 1731252629
@@ -808,7 +756,7 @@
     "para_id": 2012,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://polkadot-parallel-rpc.parallel.fi"
+      "wss://parallel.gatotech.network"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -829,7 +777,6 @@
       "wss://phala-rpc.dwellir.com",
       "wss://rpc.helikon.io/phala",
       "wss://phala.api.onfinality.io/public-ws",
-      "wss://api.phala.network/ws",
       "wss://phala.public.curie.radiumblock.co/ws"
     ],
     "expiry_timestamp": 1731252629
@@ -852,8 +799,6 @@
     "para_id": 2040,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://polkadex-parachain-rpc.dwellir.com",
-      "wss://polkadex-parachain.api.onfinality.io/public-ws",
       "wss://polkadex-parachain.public.curie.radiumblock.co/ws"
     ],
     "expiry_timestamp": 1731252629
@@ -896,20 +841,11 @@
     "expiry_timestamp": 1731252629
   },
   {
-    "name": "t3rn",
-    "para_id": 3333,
-    "relay_chain": "Polkadot",
-    "rpcs": [
-      "wss://ws.t3rn.io"
-    ],
-    "expiry_timestamp": 1731252629
-  },
-  {
     "name": "Unique Network",
     "para_id": 2037,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://unique-rpc.dwellir.com",
+      "wss://unique-rpc.n.dwellir.com",
       "wss://ws.unique.network",
       "wss://unique.ibp.network",
       "wss://unique.dotters.network",
@@ -920,12 +856,20 @@
     "expiry_timestamp": 1731252629
   },
   {
+    "name": "Xcavate",
+    "para_id": 3413,
+    "relay_chain": "Polkadot",
+    "rpcs": [
+      "wss://rpc1-polkadot.xcavate.io"
+    ],
+    "expiry_timestamp": 1731252629
+  },
+  {
     "name": "Zeitgeist",
     "para_id": 2092,
     "relay_chain": "Polkadot",
     "rpcs": [
-      "wss://zeitgeist.api.onfinality.io/public-ws",
-      "wss://main.rpc.zeitgeist.pm/ws"
+      "wss://zeitgeist.api.onfinality.io/public-ws"
     ],
     "expiry_timestamp": 1731252629
   },
@@ -934,6 +878,7 @@
     "para_id": 1000,
     "relay_chain": "Polkadot",
     "rpcs": [
+      "wss://polkadot-assethub-rpc.blockops.network/ws",
       "wss://asset-hub-polkadot-rpc.dwellir.com",
       "wss://statemint-rpc-tn.dwellir.com",
       "wss://sys.ibp.network/asset-hub-polkadot",
@@ -985,7 +930,9 @@
     "para_id": 1005,
     "relay_chain": "Polkadot",
     "rpcs": [
+      "wss://sys.ibp.network/coretime-polkadot",
       "wss://coretime-polkadot.dotters.network",
+      "wss://rpc-coretime-polkadot.luckyfriday.io",
       "wss://polkadot-coretime-rpc.polkadot.io"
     ],
     "expiry_timestamp": 1731252629
@@ -1011,12 +958,13 @@
       "wss://polkadot-public-rpc.blockops.network/ws",
       "wss://polkadot-rpc.dwellir.com",
       "wss://polkadot-rpc-tn.dwellir.com",
+      "wss://rpc-polkadot.helixstreet.io",
       "wss://rpc.ibp.network/polkadot",
       "wss://polkadot.dotters.network",
       "wss://rpc-polkadot.luckyfriday.io",
       "wss://polkadot.api.onfinality.io/public-ws",
+      "wss://polkadot.rpc.permanence.io",
       "wss://polkadot.public.curie.radiumblock.co/ws",
-      "wss://rockx-dot.w3node.com/polka-public-dot/ws",
       "wss://dot-rpc.stakeworld.io",
       "wss://polkadot.rpc.subquery.network/public/ws",
       "light://substrate-connect/polkadot"
